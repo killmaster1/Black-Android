@@ -54,3 +54,11 @@ jobs:
         if: github.event_name == 'push'
         shell: cmd
         run: call build.bat
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Black-Android-APK
+          path: |
+            app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 7
