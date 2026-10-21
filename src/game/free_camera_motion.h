@@ -11,7 +11,7 @@ inline bool Finite(const Point& p) {
     return std::isfinite(p[0]) && std::isfinite(p[1]) && std::isfinite(p[2]);
 }
 
-// Xbox view coordinates: y up. Forward includes pitch; strafing stays horizontal.
+// Coordenadas da visão do Xbox: Y para cima. Avançar acompanha a inclinação; o deslocamento lateral fica horizontal.
 inline void Move(Point& position, Point forward, float right, float ahead, float up, float speed, float dt) {
     if (!Finite(position) || !Finite(forward) || !std::isfinite(dt) || !std::isfinite(speed)) return;
     float length = std::sqrt(forward[0] * forward[0] + forward[1] * forward[1] + forward[2] * forward[2]);

@@ -10,10 +10,13 @@
 #include <cstring>
 #include <iterator>
 #include <string>
+#include <strings.h>
 #include <utility>
 #include <vector>
 
 #include "common/menu.h"
+#include "common/options.h"
+#include "game/free_camera.h"
 #include "common/mouse_keyboard.h"
 #include "common/translations.h"
 #include "core/log.h"
@@ -124,7 +127,8 @@ enum {
     kLeft = kValue + kSlots,
     kRight = kLeft + kSlots,
     kScroll = kRight + kSlots,
-    kFields = kScroll + 2
+    kPauseCamera = kScroll + 2,
+    kFields
 };
 constexpr uint32_t kFieldSize = 128;  // the HUD's message box reads 127 bytes of a string (0x12B800)
 Field g_fields[kFields];
@@ -643,6 +647,110 @@ void UpdateTexts(X86Context& ctx, Page& p) {
     Write(g_fields[kScroll + 1], p.top + p.slots < p.rows.size() ? kMore[1] : " ");
 }
 
+// Atalho na lista original da pausa. A lista mantém a área ocupada antes da inclusão do botão.
+struct PauseCamera {
+    uint32_t root = 0, button = 0, holder = 0, lead = 0;
+    std::vector<std::pair<uint32_t, float>> stock;
+    float top = 0, bottom = 0;
+    bool failed = false;
+};
+PauseCamera g_pause_camera;
+
+// O caminho vem da hierarquia real, sem depender dos nomes dos botões em cada idioma.
+std::string ClipPath(uint32_t root, uint32_t clip) {
+    std::string path;
+    int left = 16;
+    while (clip && clip != root && left--) {
+        const char* name = flash::Name(clip);
+        if (!*name) return {};
+        path = "." + std::string(name) + path;
+        clip = R32(clip + flash::kClipParent);
+    }
+    return clip == root ? "_level4" + path : std::string();
+}
+
+bool AddPauseCamera(X86Context& ctx, uint32_t root, uint32_t menu) {
+    PauseCamera& p = g_pause_camera;
+    uint32_t first = Member(ctx, menu, "mFocusButton");
+    if (!first) return false;
+    uint32_t button = first, last = 0;
+    // Só alteramos uma lista fechada, pequena e com os clipes no mesmo contêiner.
+    for (int i = 0; i < 16; i++) {
+        uint32_t clip = Member(ctx, button, "movieClip");
+        if (!flash::IsClip(clip)) return false;
+        uint32_t holder = R32(clip + flash::kClipParent);
+        if (p.holder && p.holder != holder) return false;
+        p.holder = holder;
+        float y = G<float>(clip + flash::kClipY);
+        if (p.stock.empty()) p.top = p.bottom = y;
+        p.top = std::min(p.top, y);
+        if (!last || y > p.bottom) { p.bottom = y; p.lead = clip; last = button; }
+        p.stock.emplace_back(clip, y);
+        button = Member(ctx, button, "buttonDown");
+        if (button == first) break;
+        if (!button) return false;
+    }
+    if (button != first || p.stock.size() < 2 || !(p.bottom > p.top)) return false;
+    std::string path = ClipPath(root, p.lead);
+    if (path.empty()) return false;
+    ctx.eax = Text(path.c_str());
+    CallGuest(ctx, flash::kCall, {Text("duplicateMovieClip"), 0, 2, Text("RC_CameraLivre"), Text("200")});
+    uint32_t copy = Member(ctx, p.holder, "RC_CameraLivre");
+    if (!flash::IsClip(copy)) return false;
+    uint32_t data = R32(copy + flash::kClipData);
+    W32(data + flash::kDataFlags, R32(data + flash::kDataFlags) & ~flash::kDataPlaying);
+    if (!Show(ctx, kPauseCamera, copy, nullptr, "CAMERA LIVRE: DESLIGADA")) return false;
+    CallGuest(ctx, flash::kRunActions, {R32(flash::kPlayer)});
+    if (!Button(ctx, copy, last)) return false;
+    // A confirmação é tratada aqui; o botão não herda a ação de sair da missão.
+    if (!Set(ctx, copy, "actionSelectPage", String(ctx, "")) ||
+        !Set(ctx, copy, "actionSelectFunction", String(ctx, ""))) return false;
+    uint32_t next = Member(ctx, last, "buttonDown");
+    if (!next) return false;
+    Link(ctx, last, copy);
+    Link(ctx, copy, next);
+    p.button = copy;
+    return true;
+}
+
+void PauseCameraTick(X86Context& ctx, uint32_t ui) {
+    const char* name = static_cast<const char*>(HostPtr(ui + kPageName));
+    // As opções e a confirmação de saída usam outras páginas e não recebem o atalho.
+    bool pause = strncasecmp(name, "PauseMenu", 9) == 0 && strncasecmp(name, "PauseMenuOption", 15) != 0;
+    uint32_t game = R32(kGame);
+    if (!pause || !game || R32(game + kGameState) == game + kFrontEnd) { g_pause_camera = {}; return; }
+    if (R32(flash::kPlayerReady) != 1 || !R32(flash::kPlayer) || R32(ui + kPageReady) != kPageRunning ||
+        R32(ui + kPageLeaving) || R32(ui + kPageAsked) == 1) return;
+    uint32_t root = flash::Level(flash::kMenuLevel);
+    uint32_t menu = Member(ctx, root, "MyMenu");
+    if (!root || !menu || !Member(ctx, menu, "mFocusButton")) return;
+    PauseCamera& p = g_pause_camera;
+    if (p.root != root) { p = {}; p.root = root; }
+    if (p.failed) return;
+    if (!p.button) {
+        if (!AddPauseCamera(ctx, root, menu)) {
+            if (p.holder) Hide(Member(ctx, p.holder, "RC_CameraLivre"));
+            p.failed = true;
+            LOGE("camera livre: não foi possível incluir o botão na pausa (%s)", name);
+            return;
+        }
+    }
+    // Seis itens cabem no espaço dos cinco originais, sem cobrir as instruções abaixo.
+    float scale = float(p.stock.size() - 1) / float(p.stock.size());
+    for (const auto& [clip, y] : p.stock) G<float>(clip + flash::kClipY) = p.top + (y - p.top) * scale;
+    G<float>(p.button + flash::kClipY) = p.bottom;
+    G<float>(p.button + flash::kClipX) = G<float>(p.lead + flash::kClipX);
+    std::memcpy(HostPtr(p.button + flash::kClipColours), HostPtr(p.lead + flash::kClipColours), flash::kColoursSize);
+    uint32_t focus = Member(ctx, menu, "mFocusButton");
+    uint32_t id = InputTaken(ui) ? R32(ui + kMenuInput) : 0;
+    if (focus == p.button && id >= kInputLeft && id <= kInputConfirm) {
+        game::free_camera::Toggle();
+        W32(ui + kMenuInput, kNoInput);
+        Sound(ctx);
+    }
+    Write(g_fields[kPauseCamera], game::Opt().free_camera ? "CAMERA LIVRE: LIGADA" : "CAMERA LIVRE: DESLIGADA");
+}
+
 void Tick(X86Context& ctx, uint32_t ui) {
     // read every tick, so a Delete that answers a capture is not a fresh press once it ends
     bool clear = input::TakeDeletePress();
@@ -705,6 +813,7 @@ void Tick(X86Context& ctx, uint32_t ui) {
 void OptionsMenu(X86Context& ctx, uint8_t*) {
     X86Context saved = ctx;
     Tick(ctx, ctx.ebp);
+    PauseCameraTick(ctx, ctx.ebp);
     ctx = saved;
 }
 

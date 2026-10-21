@@ -5,12 +5,14 @@ namespace input { struct Pad; }
 
 namespace game::free_camera {
 
-// game thread: restore the real eye before simulation, override only the view afterwards
+// Na thread do jogo: restaura os olhos antes da simulação e modifica a visão depois.
 void BeforePlayerUpdate(uint32_t player);
 void AfterPlayerUpdate(uint32_t player);
 void View(uint32_t player);
-// input polling thread: keep looking and pause, redirect movement and triggers to the camera
+// Na leitura dos controles: mantém visão e pausa; direciona movimento e gatilhos à câmera.
 void FilterPad(input::Pad& pad);
 bool Active();
+// Chamado pela linha da pausa, na thread do jogo.
+void Toggle();
 
 }  // namespace game::free_camera

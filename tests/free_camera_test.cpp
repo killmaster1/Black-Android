@@ -12,7 +12,7 @@
 #include "game/layout.h"
 #include "xdk/hle.h"
 
-// host boundaries only: exercise the real camera implementation against a simulated guest address space
+// Substitui apenas as interfaces externas: exercita a câmera real com memória emulada simulada.
 namespace kernel { uint8_t* g_base; }
 namespace app { bool menu = false; bool MenuOpen() { return menu; } }
 namespace touch { bool look = true; bool LookActive() { return look; } }
@@ -43,7 +43,7 @@ int main() {
     assert(Near(fast[2], slow[2]));
     at = {};
     Move(at, forward, 0, 1, 0, 200, 60);
-    assert(Near(at[2], 20));  // no jump after a long pause
+    assert(Near(at[2], 20));  // Sem salto após uma pausa longa.
     Point invalid{std::numeric_limits<float>::quiet_NaN(), 0, 0};
     Move(at, invalid, 0, 1, 0, 200, 1);
     assert(Near(at[2], 20));
@@ -62,17 +62,17 @@ int main() {
     pad.buttons = 0xFFFF;
     auto original = pad;
     FilterPad(pad);
-    assert(pad.lx == original.lx && pad.analog[7] == 255);  // disabled is a pass-through
+    assert(pad.lx == original.lx && pad.analog[7] == 255);  // Desligada, a câmera não altera os controles.
     game::Opt().free_camera = true;
     FilterPad(pad);
     assert(pad.connected && pad.lx == 0 && pad.ly == 0);
     assert(pad.rx == original.rx && pad.ry == original.ry);
     for (uint8_t b : pad.analog) assert(b == 0);
-    assert(pad.buttons == ((1u<<4)|(1u<<5)));  // menus remain reachable
+    assert(pad.buttons == ((1u<<4)|(1u<<5)));  // Os menus continuam acessíveis.
     BeforePlayerUpdate(player);
     View(player);
     assert(Active() && Eye(player) == (Point{10, 20, 30}));
-    // the game writes a new physical eye later in its update; the detached view must remain fixed
+    // O jogo atualiza os olhos físicos mais tarde; a câmera livre deve manter sua posição.
     Eye(player, {40, 50, 60});
     AfterPlayerUpdate(player);
     assert(Eye(player) == (Point{10, 20, 30}));
@@ -80,13 +80,13 @@ int main() {
     assert(Eye(player) == (Point{40, 50, 60}));
     app::menu = true;
     AfterPlayerUpdate(player);
-    assert(Eye(player) == (Point{40, 50, 60}));  // no camera override in menus
+    assert(Eye(player) == (Point{40, 50, 60}));  // Não substitui os olhos nos menus.
     app::menu = false;
     game::Opt().free_camera = false;
     AfterPlayerUpdate(player);
     assert(!Active() && Eye(player) == (Point{40, 50, 60}));
 
-    // a new world must never receive an old player's saved eye
+    // Um mundo novo nunca recebe os olhos salvos do jogador anterior.
     game::Opt().free_camera = true;
     FilterPad(original);
     BeforePlayerUpdate(player);
@@ -94,16 +94,20 @@ int main() {
     Eye(player, {70, 80, 90});
     AfterPlayerUpdate(player);
     assert(Eye(player) == (Point{40, 50, 60}));
-    game::Opt().free_camera = false;
-    View(player);
-    assert(!Active() && Eye(player) == (Point{70, 80, 90}));  // disable between update hooks
-    game::Opt().free_camera = true;
+    app::menu = true;
+    Toggle();
+    assert(!Active() && Eye(player) == (Point{70, 80, 90}));  // Desliga entre os hooks de atualização.
+    assert(!game::Opt().free_camera);
+    Toggle();
+    assert(game::Opt().free_camera && !Active());  // Ligar no menu aguarda a retomada da missão.
+    assert(Eye(player) == (Point{70, 80, 90}));
+    app::menu = false;
     FilterPad(original);
     BeforePlayerUpdate(player);
     AfterPlayerUpdate(player);
     kernel::W32(player + 0x384, 1);
     View(player);
-    assert(!Active() && Eye(player) == (Point{70, 80, 90}));  // death stops overriding the view
+    assert(!Active() && Eye(player) == (Point{70, 80, 90}));  // A morte interrompe a substituição da visão.
     kernel::W32(player + 0x384, 0);
     BeforePlayerUpdate(player);
     AfterPlayerUpdate(player);
@@ -113,5 +117,5 @@ int main() {
     BeforePlayerUpdate(next);
     assert(Eye(next) == (Point{100, 200, 300}));
     assert(!Active());
-    std::puts("free camera: movement, frame rate, input isolation, eye restoration, menus and world transition passed");
+    std::puts("Câmera livre: passaram os testes de movimento, taxa de quadros, isolamento dos controles, restauração dos olhos, menus e troca de mundo.");
 }

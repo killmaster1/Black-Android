@@ -31,7 +31,7 @@ std::mutex g_input_lock;
 Controls g_input;
 std::atomic<bool> g_active{false};
 
-// only the game thread touches guest memory and the camera's pose
+// Só a thread do jogo acessa a memória emulada e a posição da câmera.
 uint32_t g_player = 0;
 Point g_position{}, g_real_eye{};
 bool g_patched = false;
@@ -51,7 +51,7 @@ bool Current(uint32_t player) {
     return world && player == world + layout::kWorldPlayer;
 }
 void Reset() {
-    if (g_active.exchange(false)) LOGI("free camera: off");
+    if (g_active.exchange(false)) LOGI("câmera livre: desligada");
     g_player = 0;
     g_patched = false;
     g_last = {};
@@ -59,6 +59,14 @@ void Reset() {
 }  // namespace
 
 bool Active() { return g_active.load(); }
+
+void Toggle() {
+    Opt().free_camera = !Opt().free_camera;
+    if (!Opt().free_camera) {
+        if (g_patched && Current(g_player)) WriteEye(g_player, g_real_eye);
+        Reset();
+    }
+}
 
 void FilterPad(input::Pad& p) {
     bool play = Opt().free_camera && touch::LookActive() && !app::MenuOpen();
@@ -68,10 +76,10 @@ void FilterPad(input::Pad& p) {
                    play, Clock::now()};
     }
     if (!play) return;
-    // right stick still goes through the game's look update; touch and mouse keep their normal path
+    // O analógico direito continua girando a visão do jogo; toque e mouse seguem o caminho normal.
     p.lx = p.ly = 0;
     for (uint8_t& button : p.analog) button = 0;
-    p.buttons &= (1u << 4) | (1u << 5);  // Start and Back must still open the menus
+    p.buttons &= (1u << 4) | (1u << 5);  // Start e Back continuam abrindo os menus.
 }
 
 void BeforePlayerUpdate(uint32_t player) {
@@ -96,7 +104,7 @@ void View(uint32_t player) {
     if (!play) {
         if (g_patched && g_player == player) WriteEye(player, g_real_eye);
         g_patched = false;
-        // a menu or focus pause keeps the detached pose, but never accumulates movement time
+        // A pausa preserva a posição da câmera, sem acumular tempo de movimento.
         if (!enabled) Reset();
         else g_last = now;
         return;
@@ -109,7 +117,7 @@ void View(uint32_t player) {
         g_position = eye;
         g_last = now;
         g_active = true;
-        LOGI("free camera: on, player=%08X eye=(%.2f, %.2f, %.2f)", player, eye[0], eye[1], eye[2]);
+        LOGI("câmera livre: ligada, jogador=%08X olhos=(%.2f, %.2f, %.2f)", player, eye[0], eye[1], eye[2]);
     }
     if (!g_stepped) {
         float dt = std::chrono::duration<float>(now - g_last).count();
@@ -117,7 +125,7 @@ void View(uint32_t player) {
         g_last = now;
         g_stepped = true;
     }
-    // FieldOfView and the end of the player update may both pass here in one frame
+    // FieldOfView e o fim da atualização do jogador podem passar aqui no mesmo quadro.
     if (!g_patched || eye != g_position) g_real_eye = eye;
     WriteEye(player, g_position);
     g_patched = true;

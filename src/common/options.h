@@ -42,8 +42,8 @@ struct Options {
     bool god_mode = false;  // cheat: no hit takes the player's health
     bool one_hit_kill = false;  // cheat: any hit of the player's bullets kills
     bool infinite_grenades = false;  // cheat: throwing a grenade keeps the count
-    bool free_camera = false;  // session only: never start a new game with controls redirected
-    uint32_t free_camera_speed = 200;  // world units per second
+    bool free_camera = false;  // Só nesta sessão: o aplicativo inicia com os controles normais.
+    uint32_t free_camera_speed = 200;  // Unidades do mundo por segundo.
     bool unlock_levels = false;  // cheat: every mission open on every difficulty, the save is left as it is
     bool unlock_black_ops = false;  // cheat: Black Ops open on the missions open on another difficulty, the same
     std::map<std::string, std::string> keys;  // action id to key names, absent is the default

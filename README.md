@@ -1,136 +1,153 @@
-# Black for Android
-An unofficial native Android port of the original Xbox version of *Black*, with touch controls, gyroscope aiming, controller support and extended graphics options.
+# Black para Android
 
-The game's x86 code is statically recompiled ahead of time to C++ with [XboxXBE-Recomp](https://github.com/TGP482/XboxXBE-Recomp), then built for arm64. Drawing goes through Vulkan, and windowing, input and audio through SDL3. No emulator is involved.
+Adaptação nativa não oficial da versão original de *Black* para Xbox, com controles por toque, mira por giroscópio, suporte a controles e opções gráficas adicionais.
+
+O código x86 do jogo é recompilado antecipadamente para C++ com o [XboxXBE-Recomp](https://github.com/TGP482/XboxXBE-Recomp) e depois compilado para arm64. A renderização usa Vulkan; janela, controles e áudio usam SDL3.
 
 > [!NOTE]
-> This project does not include any game assets. You must provide the files from your own legally acquired copy of the game to install or build.
+> O projeto não inclui os arquivos do jogo. Para instalar ou compilar, use os arquivos da sua própria cópia adquirida legalmente.
 
 <p align="center">
   <a href="https://youtu.be/x5bczwTuyhw">
-    <img src="https://img.youtube.com/vi/x5bczwTuyhw/maxresdefault.jpg" alt="Black Android gameplay on POCO F6" width="720">
+    <img src="https://img.youtube.com/vi/x5bczwTuyhw/maxresdefault.jpg" alt="Black para Android em execução no POCO F6" width="720">
   </a>
   <br>
-  <sub>▶ Gameplay on POCO F6, max settings + gyro aim</sub>
+  <sub>▶ Jogo no POCO F6, configurações máximas e mira por giroscópio</sub>
 </p>
 
-## Installation
-1. Install the APK.
-2. Open **Black Android** and allow **all files access** when it asks (on Android 10, the **storage** permission).
-3. Copy the game into `/storage/emulated/0/Black`, or into a `Black` folder at the top of your SD card: the USA or Europe release, either as a disc image (`.iso`) or as `default.xbe` with its data folders. The app creates the folder on the phone's storage once access is allowed, and starts the game as soon as it finds the files.
+## Instalação
 
-If you don't grant that access, `Android/data/com.racas.black/files/assets` works too.
+1. Instale o APK.
+2. Abra **Black Android** e autorize o acesso a todos os arquivos. No Android 10, autorize o acesso ao armazenamento.
+3. Copie a versão americana ou europeia do jogo para `/storage/emulated/0/Black` ou para uma pasta `Black` na raiz do cartão SD. São aceitos uma imagem de disco (`.iso`) ou `default.xbe` acompanhado das pastas de dados. O aplicativo cria a pasta no armazenamento interno após receber a permissão e inicia o jogo quando encontra os arquivos.
 
-Settings (`black.toml`, `android.toml`, `layout.toml`), saves (`hdd`), logs and the shader cache are stored in `Android/data/com.racas.black/files`.
+Sem essa permissão, também é possível usar `Android/data/com.racas.black/files/assets`.
 
-## Features
-The settings are in the game's own options menu, each page under its own button: **Graphics**, **Touch Controls**, **General**, **Mouse and Keyboard** and **Cheats**. Within a page the settings are grouped under headings, and arrows above and below the list show there is more to scroll to; tap them to move the list one row. In the pause menu, the *Page* row switches between the pages. Android's back button opens the pause menu.
+As configurações (`black.toml`, `android.toml`, `layout.toml`), os jogos salvos (`hdd`), os registros e o cache de shaders ficam em `Android/data/com.racas.black/files`.
 
-### Graphics
-- **Display**
-  - **Render Resolution**: 20% to 200% of the screen's height (67% by default), instead of the original 640x480.
-  - **Field of View**: horizontal FOV from 45 to 140 degrees during gameplay. The game's default is 70.
-  - **Viewmodel Field of View**: FOV of the first-person weapon and arms.
-  - **FMV Scale**: *Fill* zooms the 4:3 videos to fill the screen; *4:3* keeps their original aspect ratio.
-- **Performance**
-  - **V-Sync**, off by default.
-  - **Max Frame Rate**: unlimited by default, or capped at the display's refresh rate or a custom value. This replaces the Xbox's 30 FPS limit.
-  - **FPS Counter**.
-- **Quality**
-  - **Anisotropic Filtering**, applied to all textures.
-  - **Draw Distance**: 2x, 4x or 8x the game's level of detail and draw distances.
-  - **Reload Blur**: turns the blur while reloading on or off.
+## Recursos
 
-### Touch Controls
-- **Touch**: the left side of the screen is a movement stick, and dragging on the right turns the view. On-screen buttons cover fire, aim, reload, use, melee, grenades, crouch, weapon switching and the suppressor. Dragging from a fire button turns the view while firing. The controls hide over loading screens and cutscenes.
-- **Menus**: a D-pad and a back button move through the menus and the options; tap an arrow to step one row, or hold it to keep going.
-- **Touch Sensitivity**: how fast a drag turns the view, separate from the mouse's sensitivity.
-- **Controls Layout**: pick a preset (*Default*, *3 Finger* or *4 Finger*) and set the controls' opacity and overall size.
-- **Edit Controls Position**: drag each control where you want it. To resize one, select it and tap **−** or **+**, or pinch it with a second finger.
-- **Motion Controls**: aim with the gyroscope by turning the phone, or a DualShock 4 or DualSense on Android 12 and newer, either always or only while firing, with adjustable sensitivity. The controller's gyroscope is used while you play with the controller, the phone's while you use the touch screen.
+As configurações ficam no menu de opções do jogo, nas páginas **Graphics** (gráficos), **Touch Controls** (controles por toque), **General** (geral), **Mouse and Keyboard** (mouse e teclado) e **Cheats** (trapaças). As setas acima e abaixo da lista permitem rolar pelas opções. Nas opções acessadas durante uma missão, a linha **Page** troca de página. O botão Voltar do Android abre o menu de pausa.
 
-### Other Input
-- **Controller**: any controller SDL3 supports, with rumble. The touch buttons hide while a controller is in use. Controllers that some phones pass on as a virtual device (a DualShock 4 on MIUI, for example) work too.
-  - **Stick Deadzone and Sensitivity**, under *Touch Controls → Controller*, for each stick: a radial dead zone from 0% to 50% of the travel (0% leaves the game's own), past which the travel runs from rest to full again, scaled by a sensitivity from 0.1 to 3.0.
-- **Keyboard and Mouse**, with rebindable controls, mouse sensitivity and invert look. In play the mouse is captured as on a PC: no pointer on the screen, and the view keeps turning past the screen's edge.
+Os nomes originais dos menus são mantidos nesta documentação para facilitar sua localização no aplicativo. As opções adicionadas por este mod aparecem em português.
 
-### General
-- **Language**: English, French, German, Italian or Spanish where the disc has them, plus Indonesian for the port's own text.
-- **Skip Intros** skips the intro logos.
-- **Audio Output**: automatic, mono, stereo or 5.1 surround.
-- **Check for Updates**: the app checks GitHub for a new release each time it opens. This button checks right away.
-- **Background Pause**: the game and its sound pause while the app is in the background.
+### Gráficos
 
-### Cheats
-- **Weapons**: infinite ammo, infinite grenades, rapid fire (2x to 4x) and no recoil.
-- **Player**: god mode and one-hit kills.
-- **Game**: game speed from 25% to 200%.
+- **Render Resolution**: resolução de 20% a 200% da altura da tela, com 67% como padrão, em vez dos 640×480 originais.
+- **Field of View**: campo de visão horizontal entre 45 e 140 graus; o padrão do jogo é 70.
+- **Viewmodel Field of View**: campo de visão da arma e dos braços em primeira pessoa.
+- **FMV Scale**: a opção **Fill** preenche a tela com os vídeos 4:3, cortando as bordas superior e inferior; **4:3** preserva a proporção original.
+- **V-Sync**: sincronização vertical, desativada por padrão.
+- **Max Frame Rate**: taxa de quadros ilimitada, limitada à frequência da tela ou a um valor personalizado, substituindo o limite original de 30 FPS.
+- **FPS Counter**: contador de quadros por segundo.
+- **Anisotropic Filtering**: filtragem anisotrópica em todas as texturas.
+- **Draw Distance**: distância de renderização e níveis de detalhe multiplicados por 2, 4 ou 8.
+- **Reload Blur**: ativa ou desativa o desfoque ao recarregar.
 
-### Free camera (experimental)
+### Controles por toque
 
-In a mission, open **Cheats → Camera**, turn **Free Camera** on, then resume. **Camera Speed** selects 25–1000
-world units per second (200 by default). The camera starts at the player's eyes. The mode is off on each app launch;
-only its speed is saved.
+- O analógico à esquerda movimenta o jogador; arrastar à direita gira a visão.
+- Os botões na tela permitem atirar, mirar, recarregar, interagir, atacar, lançar granadas, agachar, trocar de arma e usar o silenciador. Arrastar a partir de um botão de tiro permite girar a visão enquanto atira.
+- Os controles somem durante carregamentos e cenas cinematográficas.
+- Nos menus, as setas e o botão Voltar permitem navegar e selecionar opções. Toque em uma seta para avançar uma linha ou segure para continuar.
+- **Touch Sensitivity** ajusta a sensibilidade do toque separadamente da sensibilidade do mouse.
+- **Controls Layout** oferece disposições para dois, três ou quatro dedos, além de ajustes de opacidade e tamanho.
+- **Edit Controls Position** permite arrastar e redimensionar os controles usando os botões **− / +** ou o gesto de pinça.
+- **Motion Controls** permite mirar com o giroscópio do celular ou de um DualShock 4/DualSense no Android 12 ou superior. O giroscópio pode atuar sempre ou apenas ao atirar, com sensibilidade ajustável.
 
-- **Touch**: move with the left stick, drag on the right to look, hold **Fire** to rise or **Aim** to descend.
-- **Controller**: left stick moves, right stick looks, **RT** rises and **LT** descends.
-- **Keyboard/mouse**: the existing movement and look bindings apply (WASD and mouse by default); **Fire** / **Aim**
-  (left/right mouse buttons by default) rise/descend.
+### Outros dispositivos de entrada
 
-Movement follows the direction of view, with horizontal strafing. Weapon actions and player movement inputs are
-suppressed while flying; pause and settings remain accessible. Turn **Free Camera** off to return to the player's
-eyes. Opening a menu suspends the override and keeps the detached position for resuming. The world keeps running;
-this mode does not enable god mode or teleport the player.
+- **Controle**: compatível com os controles reconhecidos pelo SDL3, incluindo vibração. Os botões de toque somem durante o uso do controle. Também são aceitos dispositivos que alguns celulares apresentam como controles virtuais.
+- **Stick Deadzone and Sensitivity**, em **Touch Controls → Controller**, ajusta a zona morta radial entre 0% e 50% e a sensibilidade entre 0,1 e 3,0 para cada analógico. O valor 0% preserva a zona morta do jogo.
+- **Teclado e mouse**: permitem remapear as teclas, ajustar a sensibilidade e inverter a visão. Durante a partida, o mouse fica capturado e pode girar a câmera continuamente.
 
-This is a prototype using the known player-eye field and existing player-update/FOV hooks. It still needs an APK
-test on Android to confirm the camera reads that field at these points, along with strafe orientation and culling
-away from the player. Host tests cannot establish those game-specific behaviors. No new guest addresses or
-recompiler hook entries were added.
+### Opções gerais
 
-Host regression tests (a C++20 compiler and XboxXBE-Recomp runtime headers are required):
+- **Language**: inglês, francês, alemão, italiano ou espanhol, conforme os arquivos do disco, e indonésio para os textos próprios da adaptação.
+- **Skip Intros**: pula as apresentações iniciais.
+- **Audio Output**: saída automática, mono, estéreo ou surround 5.1.
+- **Check for Updates**: verifica novas versões no GitHub. A verificação também acontece ao abrir o aplicativo.
+- **Background Pause**: pausa o jogo e o áudio quando o aplicativo fica em segundo plano.
+
+### Trapaças
+
+- **Armas**: munição e granadas infinitas, disparo de duas a quatro vezes mais rápido e ausência de recuo.
+- **Jogador**: invulnerabilidade e eliminação com um único acerto.
+- **Jogo**: velocidade entre 25% e 200%.
+
+### Mod de câmera livre
+
+Durante uma missão, abra o menu de pausa mostrado ao pressionar Voltar no Android ou Start no controle. Na própria lista, selecione **CAMERA LIVRE: DESLIGADA** e confirme para ligar. O texto muda para **CAMERA LIVRE: LIGADA**. Confirme novamente para desligar. O atalho não sai da missão nem exige abrir as opções.
+
+Também é possível acessar **Cheats → Camera → CAMERA LIVRE**. A opção **VELOCIDADE DA CAMERA** ajusta a velocidade entre 25 e 1000 unidades do mundo por segundo; o padrão é 200. O aplicativo sempre inicia com a câmera livre desligada. Apenas a velocidade é salva.
+
+| Dispositivo | Movimento | Girar a visão | Subir | Descer |
+| --- | --- | --- | --- | --- |
+| Tela do celular | Analógico esquerdo | Arrastar à direita | Botão de atirar | Botão de granada |
+| Controle | Analógico esquerdo | Analógico direito | RT | LT |
+| Teclado e mouse | WASD por padrão | Mouse ou teclas de visão | Ação de atirar, botão esquerdo por padrão | Ação de granada, tecla G por padrão |
+
+O botão de granada envia o comando LT e o de atirar envia RT; por isso eles controlam a altura da câmera. O botão de mirar não é usado para descer.
+
+A câmera começa na posição dos olhos do jogador. Avançar acompanha a direção da visão; o movimento lateral permanece horizontal. Enquanto o mod está ligado, os comandos de andar e usar armas são redirecionados para a câmera. Os menus continuam acessíveis.
+
+Abrir o menu suspende o movimento e preserva a posição da câmera. Desligar o mod pelo novo atalho restaura os olhos do jogador imediatamente, sem aguardar outra atualização da missão. O personagem não é teletransportado; o mundo continua funcionando e a invulnerabilidade é uma opção separada. O termo noclip aqui descreve o deslocamento da câmera através dos cenários.
+
+O funcionamento da câmera livre foi confirmado pelo usuário em um dispositivo Android. O novo atalho na pausa ainda precisa ser verificado no APK atualizado. A renderização de áreas distantes continua dependendo das regras do jogo.
+
+#### Testes locais
+
+Os testes usam memória simulada e verificam movimento, taxa de quadros, isolamento dos controles, restauração dos olhos, pausa, ativação/desativação e troca de mundo. É necessário um compilador C++20 e os cabeçalhos do XboxXBE-Recomp:
 
 ```sh
-bash tools/test_free_camera.sh /path/to/XboxXBE-Recomp
+bash tools/test_free_camera.sh /caminho/para/XboxXBE-Recomp
 ```
 
-For the first APK test, activate the mode in a quiet part of a mission, test movement/look/rise/descent, pause and
-resume, then disable it and check normal walking and shooting. Also check death/retry and loading another mission.
-If the view stays attached or jitters, the camera-read hook needs investigation before this mode can be considered
-working. APK generation continues through the existing Windows GitHub Actions workflow.
+No celular, confirme que o novo botão aparece no menu principal da pausa, ligue o mod, retome a missão, teste os controles e volte ao menu para desligá-lo. Verifique também o comportamento após morrer, reiniciar e carregar outra missão.
 
-## System Requirements
-- **Android** 10 or newer, arm64.
-- **GPU** with a Vulkan 1.1 driver, for example Adreno 6xx or newer, Mali-G7x or newer, or Xclipse. Drivers without dynamic rendering or timeline semaphores are supported.
-- **Memory**: 4 GB.
-- **Storage**: 2 GB for the game files and saves.
+## Requisitos do sistema
 
-## Building
-Building requires a Windows PC.
+- **Android** 10 ou superior, arm64.
+- **GPU** com Vulkan 1.1, como Adreno 6xx ou superior, Mali-G7x ou superior ou Xclipse. São aceitos drivers sem renderização dinâmica ou semáforos de linha do tempo.
+- **Memória**: 4 GB.
+- **Armazenamento**: 2 GB para o jogo e os dados salvos.
 
-### 1. Clone the repository
+## Compilação
+
+A compilação completa utiliza um computador Windows. Neste repositório, o GitHub Actions também gera o APK quando alterações são enviadas para `main`.
+
+### 1. Clonar o repositório
+
+```sh
+git clone https://github.com/killmaster1/Black-Android.git
 ```
-git clone https://github.com/RanggaCasper/Black-Android.git
-```
 
-### 2. Add the game files
-Put `default.xbe` from the USA release in `assets/`, or put the USA disc image (`.iso`) in `assets/` or `iso/`. The build extracts `default.xbe` from the image.
+### 2. Adicionar os arquivos do jogo
 
-### 3. Install the dependencies
-- [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) with *Desktop development with C++*. The recompiler runs on the PC.
-- [Android Studio](https://developer.android.com/studio). In its SDK Manager, install Android SDK Platform 34, NDK `28.2.13676358` and CMake `3.31.6`.
-- [Python](https://www.python.org/), needed only to extract `default.xbe` from a disc image.
+Coloque o `default.xbe` da versão americana em `assets/` ou uma imagem americana (`.iso`) em `assets/` ou `iso/`. O processo de compilação extrai o `default.xbe` da imagem quando necessário.
 
-### 4. Build
-Run `build.bat`. It builds the recompiler, recompiles the xbe into `generated/game`, then builds `app/build/outputs/apk/release/app-release.apk` with Gradle. The first build compiles the whole game for arm64 and takes 30 to 90 minutes.
+### 3. Instalar as dependências
 
-Install the APK with:
-```
+- [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) com a carga de trabalho de desenvolvimento para desktop com C++. O recompilador é executado no computador.
+- [Android Studio](https://developer.android.com/studio). No gerenciador de SDKs, instale Android SDK Platform 34, NDK `28.2.13676358` e CMake `3.31.6`.
+- [Python](https://www.python.org/), necessário apenas para extrair o `default.xbe` de uma imagem de disco.
+
+### 4. Gerar o APK
+
+Execute `build.bat`. Ele compila o recompilador, gera o código em `generated/game` e usa o Gradle para produzir `app/build/outputs/apk/release/app-release.apk`. A primeira compilação arm64 completa pode levar de 30 a 90 minutos.
+
+Para instalar o APK pelo computador:
+
+```sh
 adb install -r app/build/outputs/apk/release/app-release.apk
 ```
 
-## Credits
-- [XboxXBE-Recomp](https://github.com/TGP482/XboxXBE-Recomp) by TGP482: the static recompiler and the portable runtime (Xbox kernel, XDK libraries and Direct3D 8) this port is built on.
-- [SDL](https://github.com/libsdl-org/SDL), [glslang](https://github.com/KhronosGroup/glslang), [toml++](https://github.com/marzer/tomlplusplus) and [Dear ImGui](https://github.com/ocornut/imgui).
-- [xemu](https://github.com/xemu-project/xemu) and [Cxbx-Reloaded](https://github.com/Cxbx-Reloaded/Cxbx-Reloaded), which XboxXBE-Recomp used as references for Xbox hardware and API behavior.
+No GitHub, acompanhe a execução **Android CI** na aba **Actions**. Após a conclusão bem-sucedida, baixe o artefato **Black-Android-APK**.
 
-*Black* is a trademark of its respective owners. This project is not affiliated with or endorsed by them.
+## Créditos
+
+- [XboxXBE-Recomp](https://github.com/TGP482/XboxXBE-Recomp), de TGP482: recompilador estático e ambiente de execução portável, incluindo kernel do Xbox, bibliotecas XDK e Direct3D 8.
+- [SDL](https://github.com/libsdl-org/SDL), [glslang](https://github.com/KhronosGroup/glslang), [toml++](https://github.com/marzer/tomlplusplus) e [Dear ImGui](https://github.com/ocornut/imgui).
+- [xemu](https://github.com/xemu-project/xemu) e [Cxbx-Reloaded](https://github.com/Cxbx-Reloaded), usados como referência de hardware e APIs do Xbox pelo XboxXBE-Recomp.
+
+*Black* é uma marca de seus respectivos proprietários. Este projeto não é afiliado nem endossado por eles.
