@@ -2,6 +2,7 @@
 
 [xbe]
 path = "assets/default.xbe"
+library = "BLACK.dll"
 title = 0x45410083
 entry = 0x25A3F
 xdk = 5849
