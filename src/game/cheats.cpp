@@ -1,8 +1,10 @@
 // The cheats page's god mode, one-hit kill and infinite grenades. The rest live where the game
 // already has a hook: infinite ammo, rapid fire and no recoil with the weapon's, game speed with the frame time
 #include <algorithm>
+#include <cmath>
 
 #include "common/options.h"
+#include "core/log.h"
 #include "game/layout.h"
 #include "xdk/hle.h"
 
@@ -64,6 +66,21 @@ X86_EXTERN_FUNC(__imp__sub_001E5FA0);
 X86_FUNC(sub_001E5FA0) {
     uint32_t me = ctx.ecx;
     if (me && me == Player() && R32(me + kCharKind) == kPlayerKind) {
+        // TEMPORARY DIAGNOSTIC: every half second, log the player's float fields that moved. Walk, jump and climb
+        // while watching `adb logcat | grep POS` to find the position and velocity offsets. Remove afterwards.
+        static float prev[0x240];
+        static int tick;
+        if (++tick % 30 == 0) {
+            int lines = 0;
+            for (uint32_t i = 0; i < 0x240; i++) {
+                float v = G<float>(me + i * 4);
+                if (lines < 40 && std::isfinite(v) && std::fabs(v) < 1e5f && std::fabs(v - prev[i]) > 0.05f) {
+                    LOGI("POS +0x%X: %.2f -> %.2f", i * 4, prev[i], v);
+                    lines++;
+                }
+                prev[i] = v;
+            }
+        }
         if (game::Opt().god_mode && !R32(me + kCharDying)) {
             float& health = G<float>(me + kCharHealth);
             health = std::max(health, FullHealth());
