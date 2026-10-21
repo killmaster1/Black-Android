@@ -95,7 +95,12 @@ X86_FUNC(sub_001E5FA0) {
             for (uint32_t i = 0; i < 0x240; i++) {
                 float v = G<float>(me + i * 4);
                 if (lines < 40 && std::isfinite(v) && std::fabs(v) < 1e5f && std::fabs(v - prev[i]) > 0.05f) {
-                    LOGI("POS +0x%X: %.2f -> %.2f", i * 4, prev[i], v);
+                    __android_log_print(
+                        ANDROID_LOG_ERROR,
+                        "BLACK_POS",
+                        "POS +0x%X: %.2f -> %.2f",
+                        i * 4, prev[i], v
+                    );
                     lines++;
                 }
                 prev[i] = v;
