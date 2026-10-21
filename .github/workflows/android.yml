@@ -54,6 +54,15 @@ jobs:
         if: github.event_name == 'push'
         shell: cmd
         run: call build.bat
+      - name: Upload recompiler diagnostics
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Black-Recompiler-Diagnostics
+          path: generated/game/x86_func_mapping.cpp
+          if-no-files-found: error
+          retention-days: 3
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
