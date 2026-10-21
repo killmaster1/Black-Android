@@ -105,6 +105,12 @@ bash tools/test_free_camera.sh /caminho/para/XboxXBE-Recomp
 
 No celular, confirme que o novo botão aparece no menu principal da pausa, ligue o mod, retome a missão, teste os controles e volte ao menu para desligá-lo. Verifique também o comportamento após morrer, reiniciar e carregar outra missão.
 
+### Mira de ferro da AK-47 (ADS experimental)
+
+Equipe a AK-47 em uma missão e abra **Graphics → MIRA DE FERRO AK47 → REGISTRAR AK47 EQUIPADA**. A partir desse registro manual, o botão de mirar passa a aplicar o perfil 3D somente ao tipo de arma registrado.
+
+O perfil tem transição suave e ajustes de posição, distância e rotação. Os valores iniciais ainda precisam de calibração visual no celular. Consulte o [guia de ativação, calibração e testes](docs/ads-ak47.md).
+
 ## Requisitos do sistema
 
 - **Android** 10 ou superior, arm64.

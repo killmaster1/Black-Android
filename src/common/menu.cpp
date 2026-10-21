@@ -21,6 +21,7 @@
 #include "common/menu.h"
 #include "common/mouse_keyboard.h"
 #include "common/options.h"
+#include "game/ads_ak47.h"
 #include "common/translations.h"
 
 // native/gyro.cpp: aiming by turning the phone
@@ -233,7 +234,7 @@ enum RowId { kRenderResolution, kMaxFps, kVsync, kFpsCounter, kAniso, kReloadBlu
              kFmvScale, kGyro, kGyroSensitivity, kTouchLayout, kTouchOpacity, kTouchSize, kTouchEdit,
              kInfiniteAmmo, kRapidFire, kNoRecoil, kGameSpeed, kGodMode, kOneHitKill, kInfiniteGrenades,
              kCheckUpdates, kTouchSensitivity, kLeftDeadzone, kRightDeadzone, kLeftSensitivity, kRightSensitivity,
-             kScreenFilter, kGyroInvertX, kGyroInvertY, kUnlockLevels, kUnlockBlackOps, kFreeCamera, kFreeCameraSpeed };
+             kScreenFilter, kGyroInvertX, kGyroInvertY, kUnlockLevels, kUnlockBlackOps, kFreeCamera, kFreeCameraSpeed, kAdsAk47, kAdsRegister, kAdsX, kAdsY, kAdsZ, kAdsYaw, kAdsPitch };
 
 using rows::Kind;
 using rows::Row;
@@ -246,6 +247,14 @@ constexpr Row kGraphicsRows[] = {
     {Kind::Value, kViewmodelFov, "VIEWMODEL FIELD OF VIEW"},
     {Kind::Value, kFmvScale, "FMV SCALE"},
     {Kind::Value, kScreenFilter, "SCREEN FILTER"},
+    {Kind::Heading, -1, "MIRA DE FERRO AK47"},
+    {Kind::Value, kAdsAk47, "ATIVAR ADS AK47"},
+    {Kind::Value, kAdsRegister, "REGISTRAR AK47 EQUIPADA"},
+    {Kind::Value, kAdsX, "ADS POSICAO HORIZONTAL"},
+    {Kind::Value, kAdsY, "ADS ALTURA"},
+    {Kind::Value, kAdsZ, "ADS DISTANCIA"},
+    {Kind::Value, kAdsYaw, "ADS ROTACAO HORIZONTAL"},
+    {Kind::Value, kAdsPitch, "ADS INCLINACAO"},
     {Kind::Heading, -1, "PERFORMANCE"},
     {Kind::Value, kVsync, "VERTICAL SYNC"},
     {Kind::Value, kMaxFps, "MAX FRAME RATE"},
@@ -336,6 +345,7 @@ bool* ToggleFlag(Settings& s, int id) {
         case kNoRecoil: return &o.no_recoil;
         case kGodMode: return &o.god_mode;
         case kFreeCamera: return &o.free_camera;
+        case kAdsAk47: return &o.ads_ak47;
         case kOneHitKill: return &o.one_hit_kill;
         case kInfiniteGrenades: return &o.infinite_grenades;
         case kUnlockLevels: return &o.unlock_levels;
@@ -411,6 +421,21 @@ bool StepGraphicsRow(int id, int step, Settings& s, char (&text)[64]) {
 bool StepCheatRow(int id, int step, char (&text)[64]) {
     game::Options& o = game::Opt();
     switch (id) {
+        case kAdsRegister:
+            if (step && !game::ads_ak47::RegisterCurrent()) {
+                std::snprintf(text, sizeof(text), "EQUIPE A AK47 NA MISSAO");
+                return true;
+            }
+            std::snprintf(text, sizeof(text), "%s", o.ads_ak47_type < 128 ? "REGISTRADA" : "CONFIRMAR");
+            return true;
+        case kAdsX: case kAdsY: case kAdsZ: case kAdsYaw: case kAdsPitch: {
+            uint32_t& value = id == kAdsX ? o.ads_ak47_x : id == kAdsY ? o.ads_ak47_y : id == kAdsZ ? o.ads_ak47_z :
+                              id == kAdsYaw ? o.ads_ak47_yaw : o.ads_ak47_pitch;
+            if (step) value = uint32_t(StepRange(int(std::min(value, 2000u)), 0, 2000, 1, step));
+            bool angle = id == kAdsYaw || id == kAdsPitch;
+            std::snprintf(text, sizeof(text), angle ? "%+.1f GRAUS" : "%+.2f", (float(value) - 1000) / (angle ? 10 : 100));
+            return true;
+        }
         case kRapidFire:
             // off, then 2 to 4 times the rate
             if (step) o.rapid_fire = uint32_t(StepRange(int(o.rapid_fire), 1, 4, 1, step));
@@ -888,7 +913,7 @@ bool rows::Restorable(int page) { return page == kKeyboardPage || page == kCheat
 
 bool rows::Enabled(const Row&) { return true; }
 
-bool rows::Opens(const Row& row) { return row.kind == Kind::Value && (row.id == kTouchEdit || row.id == kCheckUpdates); }
+bool rows::Opens(const Row& row) { return row.kind == Kind::Value && (row.id == kTouchEdit || row.id == kCheckUpdates || row.id == kAdsRegister); }
 
 bool MenuOpen() { return g_open.load(std::memory_order_relaxed); }
 

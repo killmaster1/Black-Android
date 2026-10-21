@@ -42,6 +42,11 @@ struct Options {
     bool god_mode = false;  // cheat: no hit takes the player's health
     bool one_hit_kill = false;  // cheat: any hit of the player's bullets kills
     bool infinite_grenades = false;  // cheat: throwing a grenade keeps the count
+    bool ads_ak47 = false;  // Mira de ferro calibrável, restrita ao tipo registrado pelo jogador.
+    uint32_t ads_ak47_type = 255;  // 255 significa que nenhuma AK47 foi registrada.
+    // 1000 representa zero. Posição em centésimos de unidade; ângulos em décimos de grau.
+    uint32_t ads_ak47_x = 988, ads_ak47_y = 1007, ads_ak47_z = 1000;
+    uint32_t ads_ak47_yaw = 1000, ads_ak47_pitch = 1000;
     bool free_camera = false;  // Só nesta sessão: o aplicativo inicia com os controles normais.
     uint32_t free_camera_speed = 200;  // Unidades do mundo por segundo.
     bool unlock_levels = false;  // cheat: every mission open on every difficulty, the save is left as it is
