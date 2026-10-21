@@ -1,5 +1,6 @@
 // The cheats page's god mode, one-hit kill and infinite grenades. The rest live where the game
 // already has a hook: infinite ammo, rapid fire and no recoil with the weapon's, game speed with the frame time
+#include <android/log.h>
 #include <algorithm>
 #include <cmath>
 
@@ -64,6 +65,18 @@ bool g_invulnerable;  // the flag is ours, cleared when god mode goes off
 // its damage calls test
 X86_EXTERN_FUNC(__imp__sub_001E5FA0);
 X86_FUNC(sub_001E5FA0) {
+    static unsigned int android_hook_calls = 0;
+    ++android_hook_calls;
+
+    if (android_hook_calls == 1 || android_hook_calls % 120 == 0) {
+        __android_log_print(
+            ANDROID_LOG_ERROR,
+            "BLACK_HOOK",
+            "HOOK_EXECUTADO calls=%u ecx=0x%08X",
+            android_hook_calls,
+            ctx.ecx
+        );
+    }
     static int hook_diag_tick = 0;
 
     if (++hook_diag_tick % 120 == 0) {
