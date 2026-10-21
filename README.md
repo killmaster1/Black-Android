@@ -66,6 +66,38 @@ The settings are in the game's own options menu, each page under its own button:
 - **Player**: god mode and one-hit kills.
 - **Game**: game speed from 25% to 200%.
 
+### Free camera (experimental)
+
+In a mission, open **Cheats → Camera**, turn **Free Camera** on, then resume. **Camera Speed** selects 25–1000
+world units per second (200 by default). The camera starts at the player's eyes. The mode is off on each app launch;
+only its speed is saved.
+
+- **Touch**: move with the left stick, drag on the right to look, hold **Fire** to rise or **Aim** to descend.
+- **Controller**: left stick moves, right stick looks, **RT** rises and **LT** descends.
+- **Keyboard/mouse**: the existing movement and look bindings apply (WASD and mouse by default); **Fire** / **Aim**
+  (left/right mouse buttons by default) rise/descend.
+
+Movement follows the direction of view, with horizontal strafing. Weapon actions and player movement inputs are
+suppressed while flying; pause and settings remain accessible. Turn **Free Camera** off to return to the player's
+eyes. Opening a menu suspends the override and keeps the detached position for resuming. The world keeps running;
+this mode does not enable god mode or teleport the player.
+
+This is a prototype using the known player-eye field and existing player-update/FOV hooks. It still needs an APK
+test on Android to confirm the camera reads that field at these points, along with strafe orientation and culling
+away from the player. Host tests cannot establish those game-specific behaviors. No new guest addresses or
+recompiler hook entries were added.
+
+Host regression tests (a C++20 compiler and XboxXBE-Recomp runtime headers are required):
+
+```sh
+bash tools/test_free_camera.sh /path/to/XboxXBE-Recomp
+```
+
+For the first APK test, activate the mode in a quiet part of a mission, test movement/look/rise/descent, pause and
+resume, then disable it and check normal walking and shooting. Also check death/retry and loading another mission.
+If the view stays attached or jitters, the camera-read hook needs investigation before this mode can be considered
+working. APK generation continues through the existing Windows GitHub Actions workflow.
+
 ## System Requirements
 - **Android** 10 or newer, arm64.
 - **GPU** with a Vulkan 1.1 driver, for example Adreno 6xx or newer, Mali-G7x or newer, or Xclipse. Drivers without dynamic rendering or timeline semaphores are supported.

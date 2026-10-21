@@ -7,6 +7,7 @@
 #include "common/options.h"
 #include "core/log.h"
 #include "game/layout.h"
+#include "game/free_camera.h"
 #include "xdk/hle.h"
 
 using namespace kernel;
@@ -116,7 +117,10 @@ X86_FUNC(sub_001E5FA0) {
             g_invulnerable = false;
         }
     }
+    bool player_update = me && me == Player() && R32(me + kCharKind) == kPlayerKind;
+    if (player_update) game::free_camera::BeforePlayerUpdate(me);
     __imp__sub_001E5FA0(ctx, base);
+    if (player_update) game::free_camera::AfterPlayerUpdate(me);
 }
 
 // A soldier takes a bullet (ecx the victim, the sixth of seven arguments its attacker, ret 0x1C): the

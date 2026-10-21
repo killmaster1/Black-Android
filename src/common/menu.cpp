@@ -233,7 +233,7 @@ enum RowId { kRenderResolution, kMaxFps, kVsync, kFpsCounter, kAniso, kReloadBlu
              kFmvScale, kGyro, kGyroSensitivity, kTouchLayout, kTouchOpacity, kTouchSize, kTouchEdit,
              kInfiniteAmmo, kRapidFire, kNoRecoil, kGameSpeed, kGodMode, kOneHitKill, kInfiniteGrenades,
              kCheckUpdates, kTouchSensitivity, kLeftDeadzone, kRightDeadzone, kLeftSensitivity, kRightSensitivity,
-             kScreenFilter, kGyroInvertX, kGyroInvertY, kUnlockLevels, kUnlockBlackOps };
+             kScreenFilter, kGyroInvertX, kGyroInvertY, kUnlockLevels, kUnlockBlackOps, kFreeCamera, kFreeCameraSpeed };
 
 using rows::Kind;
 using rows::Row;
@@ -297,6 +297,9 @@ constexpr Row kCheatRows[] = {
     {Kind::Heading, -1, "PLAYER"},
     {Kind::Value, kGodMode, "GOD MODE"},
     {Kind::Value, kOneHitKill, "ONE-HIT KILL"},
+    {Kind::Heading, -1, "CAMERA"},
+    {Kind::Value, kFreeCamera, "FREE CAMERA"},
+    {Kind::Value, kFreeCameraSpeed, "CAMERA SPEED"},
     {Kind::Heading, -1, "GAME"},
     {Kind::Value, kGameSpeed, "GAME SPEED"},
     {Kind::Value, kUnlockLevels, "UNLOCK ALL MISSIONS"},
@@ -332,6 +335,7 @@ bool* ToggleFlag(Settings& s, int id) {
         case kInfiniteAmmo: return &o.infinite_ammo;
         case kNoRecoil: return &o.no_recoil;
         case kGodMode: return &o.god_mode;
+        case kFreeCamera: return &o.free_camera;
         case kOneHitKill: return &o.one_hit_kill;
         case kInfiniteGrenades: return &o.infinite_grenades;
         case kUnlockLevels: return &o.unlock_levels;
@@ -412,6 +416,10 @@ bool StepCheatRow(int id, int step, char (&text)[64]) {
             if (step) o.rapid_fire = uint32_t(StepRange(int(o.rapid_fire), 1, 4, 1, step));
             if (o.rapid_fire <= 1) std::snprintf(text, sizeof(text), "OFF");
             else std::snprintf(text, sizeof(text), "%uX", o.rapid_fire);
+            return true;
+        case kFreeCameraSpeed:
+            if (step) o.free_camera_speed = uint32_t(StepRange(int(o.free_camera_speed), 25, 1000, 25, step));
+            std::snprintf(text, sizeof(text), "%u", o.free_camera_speed);
             return true;
         case kGameSpeed:
             // 25% to 200% in steps of 25
@@ -566,6 +574,8 @@ void RestoreDefaults(int page) {
         o.rapid_fire = none.rapid_fire;
         o.no_recoil = none.no_recoil;
         o.game_speed = none.game_speed;
+        o.free_camera = none.free_camera;
+        o.free_camera_speed = none.free_camera_speed;
         o.god_mode = none.god_mode;
         o.one_hit_kill = none.one_hit_kill;
         o.infinite_grenades = none.infinite_grenades;
@@ -595,6 +605,8 @@ void RestoreDefaults(int page) {
     o.rapid_fire = keep.rapid_fire;
     o.no_recoil = keep.no_recoil;
     o.game_speed = keep.game_speed;
+    o.free_camera = keep.free_camera;
+    o.free_camera_speed = keep.free_camera_speed;
     o.god_mode = keep.god_mode;
     o.one_hit_kill = keep.one_hit_kill;
     o.infinite_grenades = keep.infinite_grenades;

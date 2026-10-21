@@ -8,6 +8,7 @@
 #include "common/menu.h"
 #include "common/mouse_keyboard.h"
 #include "common/options.h"
+#include "game/free_camera.h"
 
 namespace game {
 
@@ -18,7 +19,10 @@ void Pad(int port, input::Pad& pad) {
     input::SeenPad(pad);
     if (port == 0) pad.connected = true;
     if (app::MenuOpen()) pad = input::Pad{.connected = pad.connected};
-    else if (port == 0) input::Keyboard(pad);
+    else if (port == 0) {
+        input::Keyboard(pad);
+        free_camera::FilterPad(pad);
+    }
 }
 
 // no vibration while the keyboard and mouse are in use
@@ -107,6 +111,7 @@ const app::GameInfo app::kGame = {
                 {"rapid_fire", nullptr, &game::Opt().rapid_fire},
                 {"no_recoil", &game::Opt().no_recoil, nullptr},
                 {"game_speed", nullptr, &game::Opt().game_speed},
+                {"free_camera_speed", nullptr, &game::Opt().free_camera_speed},
                 {"god_mode", &game::Opt().god_mode, nullptr},
                 {"one_hit_kill", &game::Opt().one_hit_kill, nullptr},
                 {"infinite_grenades", &game::Opt().infinite_grenades, nullptr},
