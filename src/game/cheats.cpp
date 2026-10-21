@@ -9,6 +9,7 @@
 #include "game/layout.h"
 #include "game/free_camera.h"
 #include "game/ads_ak47.h"
+#include "game/camera_adjust.h"
 #include "xdk/hle.h"
 
 using namespace kernel;
@@ -121,11 +122,13 @@ X86_FUNC(sub_001E5FA0) {
     bool player_update = me && me == Player() && R32(me + kCharKind) == kPlayerKind;
     if (player_update) {
         game::free_camera::BeforePlayerUpdate(me);
+        game::camera_adjust::BeforePlayerUpdate(me);
         game::ads_ak47::BeforePlayerUpdate(me);
     }
     __imp__sub_001E5FA0(ctx, base);
     if (player_update) {
         game::free_camera::AfterPlayerUpdate(me);
+        game::camera_adjust::View(me);
         game::ads_ak47::AfterPlayerUpdate(me);
     }
 }

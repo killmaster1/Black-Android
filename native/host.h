@@ -69,6 +69,8 @@ void Pump();  // the sensor opened while a mode wants it, closed otherwise
 // ImGui's input from SDL's events (ui.cpp), main thread, under app::UiLock
 namespace ui {
 void OnEvent(const SDL_Event& e);
+// Libera um gesto interrompido ao colocar o aplicativo em segundo plano.
+void ReleasePointer();
 // render thread, before ImGui::NewFrame: the display size and the frame time
 void NewFrame(float width, float height);
 }  // namespace ui

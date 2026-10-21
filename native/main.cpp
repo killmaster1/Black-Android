@@ -24,6 +24,7 @@
 #include <toml++/toml.hpp>
 
 #include "app/app.h"
+#include "common/camera_tools.h"
 #include "build_info.h"
 #include "core/input.h"
 #include "core/log.h"
@@ -328,6 +329,10 @@ void Dispatch(const SDL_Event& e) {
             break;
         default:
             break;
+    }
+    {
+        std::lock_guard lock(app::UiLock());
+        if (camera_tools::RouteEvent(e)) { ui::OnEvent(e); return; }
     }
     if (touch::OnEvent(e)) return;
     std::lock_guard lock(app::UiLock());

@@ -16,6 +16,7 @@
 
 #include "common/menu.h"
 #include "common/options.h"
+#include "common/camera_tools.h"
 #include "game/free_camera.h"
 #include "common/mouse_keyboard.h"
 #include "common/translations.h"
@@ -699,7 +700,7 @@ bool AddPauseCamera(X86Context& ctx, uint32_t root, uint32_t menu) {
     if (!flash::IsClip(copy)) return false;
     uint32_t data = R32(copy + flash::kClipData);
     W32(data + flash::kDataFlags, R32(data + flash::kDataFlags) & ~flash::kDataPlaying);
-    if (!Show(ctx, kPauseCamera, copy, nullptr, "CAMERA LIVRE: DESLIGADA")) return false;
+    if (!Show(ctx, kPauseCamera, copy, nullptr, "CHEATS")) return false;
     CallGuest(ctx, flash::kRunActions, {R32(flash::kPlayer)});
     if (!Button(ctx, copy, last)) return false;
     // A confirmação é tratada aqui; o botão não herda a ação de sair da missão.
@@ -744,11 +745,11 @@ void PauseCameraTick(X86Context& ctx, uint32_t ui) {
     uint32_t focus = Member(ctx, menu, "mFocusButton");
     uint32_t id = InputTaken(ui) ? R32(ui + kMenuInput) : 0;
     if (focus == p.button && id >= kInputLeft && id <= kInputConfirm) {
-        game::free_camera::Toggle();
+        camera_tools::OpenCheats();
         W32(ui + kMenuInput, kNoInput);
         Sound(ctx);
     }
-    Write(g_fields[kPauseCamera], game::Opt().free_camera ? "CAMERA LIVRE: LIGADA" : "CAMERA LIVRE: DESLIGADA");
+    Write(g_fields[kPauseCamera], "CHEATS");
 }
 
 void Tick(X86Context& ctx, uint32_t ui) {
@@ -812,6 +813,7 @@ void Tick(X86Context& ctx, uint32_t ui) {
 // ebp the front end, after the cursor's input and before the Flash player runs the page's script
 void OptionsMenu(X86Context& ctx, uint8_t*) {
     X86Context saved = ctx;
+    game::free_camera::ProcessRequests();
     Tick(ctx, ctx.ebp);
     PauseCameraTick(ctx, ctx.ebp);
     ctx = saved;

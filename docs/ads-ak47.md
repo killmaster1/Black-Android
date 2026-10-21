@@ -13,6 +13,10 @@ O registro é manual: ele não reconhece o nome da arma. Se registrar outra arma
 
 Para desligar, desative **ATIVAR ADS AK47**. O ajuste não atua nas outras armas e fica suspenso com a câmera livre. A recarga faz a arma sair suavemente da posição de mira.
 
+## Ajustes sem reabrir a pausa
+
+Ative **Pausa → CHEATS → Ajuste de camera** e retome a missão. Na aba **AK47 (ADS)** do painel lateral, os mesmos ajustes podem ser alterados durante o jogo. O botão **Salvar perfil** salva o resultado. O registro da arma continua sendo manual.
+
 ## Calibração
 
 - **ADS POSICAO HORIZONTAL**: desloca a arma para os lados.

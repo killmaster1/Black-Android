@@ -30,6 +30,7 @@
 #include "common/aspect.h"
 #include "common/keys.h"
 #include "common/menu.h"
+#include "common/camera_tools.h"
 #include "common/options.h"
 #include "common/translations.h"
 #include "host.h"
@@ -1529,7 +1530,7 @@ void Pump() {
     // in the menus, the panel, the background and once the touch screen is used; asked again whenever Android took
     // it away
     SDL_Window* window = host::Window();
-    bool capture = input::g_keyboard && !input::g_touch && LookActive();
+    bool capture = input::g_keyboard && !input::g_touch && LookActive() && !camera_tools::Visible();
     if (window && capture != SDL_GetWindowRelativeMouseMode(window)) SDL_SetWindowRelativeMouseMode(window, capture);
     bool want = input::g_text && input::Active();
     if (want == input::g_text_shown) return;

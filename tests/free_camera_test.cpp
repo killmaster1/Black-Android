@@ -117,5 +117,14 @@ int main() {
     BeforePlayerUpdate(next);
     assert(Eye(next) == (Point{100, 200, 300}));
     assert(!Active());
+    game::Opt().free_camera = false;
+    RequestToggle();
+    assert(!game::Opt().free_camera);  // O painel não altera o estado da thread do jogo diretamente.
+    ProcessRequests();
+    assert(game::Opt().free_camera);
+    RequestToggle(); RequestToggle(); ProcessRequests();
+    assert(game::Opt().free_camera);  // Duas solicitações se anulam.
+    RequestToggle(); ProcessRequests();
+    assert(!game::Opt().free_camera);
     std::puts("Câmera livre: passaram os testes de movimento, taxa de quadros, isolamento dos controles, restauração dos olhos, menus e troca de mundo.");
 }

@@ -54,6 +54,13 @@ bool g_fingered = false;
 
 }  // namespace
 
+void ReleasePointer() {
+    g_fingered = false;
+    if (!ImGui::GetCurrentContext()) return;
+    ImGui::GetIO().AddMouseButtonEvent(0, false);
+    ImGui::GetIO().AddMousePosEvent(-FLT_MAX, -FLT_MAX);
+}
+
 void OnEvent(const SDL_Event& e) {
     if (!ImGui::GetCurrentContext()) return;
     ImGuiIO& io = ImGui::GetIO();

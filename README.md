@@ -77,8 +77,7 @@ Os nomes originais dos menus são mantidos nesta documentação para facilitar s
 
 ### Mod de câmera livre
 
-Durante uma missão, abra o menu de pausa mostrado ao pressionar Voltar no Android ou Start no controle. Na própria lista, selecione **CAMERA LIVRE: DESLIGADA** e confirme para ligar. O texto muda para **CAMERA LIVRE: LIGADA**. Confirme novamente para desligar. O atalho não sai da missão nem exige abrir as opções.
-
+Durante uma missão, abra o menu de pausa pelo botão Voltar do Android ou Start do controle. Na própria lista, selecione **CHEATS** e ative **Camera livre**. Use **Voltar a pausa** e continue a missão. Para desligar, volte à mesma seção e desmarque a opção.
 Também é possível acessar **Cheats → Camera → CAMERA LIVRE**. A opção **VELOCIDADE DA CAMERA** ajusta a velocidade entre 25 e 1000 unidades do mundo por segundo; o padrão é 200. O aplicativo sempre inicia com a câmera livre desligada. Apenas a velocidade é salva.
 
 | Dispositivo | Movimento | Girar a visão | Subir | Descer |
@@ -91,9 +90,9 @@ O botão de granada envia o comando LT e o de atirar envia RT; por isso eles con
 
 A câmera começa na posição dos olhos do jogador. Avançar acompanha a direção da visão; o movimento lateral permanece horizontal. Enquanto o mod está ligado, os comandos de andar e usar armas são redirecionados para a câmera. Os menus continuam acessíveis.
 
-Abrir o menu suspende o movimento e preserva a posição da câmera. Desligar o mod pelo novo atalho restaura os olhos do jogador imediatamente, sem aguardar outra atualização da missão. O personagem não é teletransportado; o mundo continua funcionando e a invulnerabilidade é uma opção separada. O termo noclip aqui descreve o deslocamento da câmera através dos cenários.
+Abrir o menu suspende o movimento e preserva a posição da câmera. Desligar o mod pela seção Cheats solicita a restauração dos olhos na thread do jogo, inclusive durante a pausa. O personagem não é teletransportado; o mundo continua funcionando e a invulnerabilidade é uma opção separada. O termo noclip aqui descreve o deslocamento da câmera através dos cenários.
 
-O funcionamento da câmera livre foi confirmado pelo usuário em um dispositivo Android. O novo atalho na pausa ainda precisa ser verificado no APK atualizado. A renderização de áreas distantes continua dependendo das regras do jogo.
+O funcionamento da câmera livre foi confirmado pelo usuário em um dispositivo Android. A nova seção Cheats e o painel lateral precisam ser verificados no APK atualizado. A renderização de áreas distantes continua dependendo das regras do jogo.
 
 #### Testes locais
 
@@ -110,6 +109,12 @@ No celular, confirme que o novo botão aparece no menu principal da pausa, ligue
 Equipe a AK-47 em uma missão e abra **Graphics → MIRA DE FERRO AK47 → REGISTRAR AK47 EQUIPADA**. A partir desse registro manual, o botão de mirar passa a aplicar o perfil 3D somente ao tipo de arma registrado.
 
 O perfil tem transição suave e ajustes de posição, distância e rotação. Os valores iniciais ainda precisam de calibração visual no celular. Consulte o [guia de ativação, calibração e testes](docs/ads-ak47.md).
+
+### Painel lateral de ajustes em tempo real
+
+Abra **Pausa → CHEATS → Ajuste de camera**, volte à missão e ajuste altura, posição lateral, distância e FOV pelo pequeno painel do ImGui. A aba **AK47 (ADS)** também permite calibrar a arma sem reabrir as opções. O painel pode ser recolhido, movido para a outra lateral e usado para salvar o perfil.
+
+Os toques dentro do painel são separados dos controles de tiro e visão. Consulte o [guia do painel e seus testes](docs/painel-camera.md).
 
 ## Requisitos do sistema
 

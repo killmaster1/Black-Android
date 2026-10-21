@@ -30,6 +30,7 @@ struct Controls {
 std::mutex g_input_lock;
 Controls g_input;
 std::atomic<bool> g_active{false};
+std::atomic<unsigned> g_toggle_requests{0};
 
 // Só a thread do jogo acessa a memória emulada e a posição da câmera.
 uint32_t g_player = 0;
@@ -68,6 +69,9 @@ void Toggle() {
     }
 }
 
+void RequestToggle() { g_toggle_requests.fetch_add(1); }
+void ProcessRequests() { if (g_toggle_requests.exchange(0) & 1u) Toggle(); }
+
 void FilterPad(input::Pad& p) {
     bool play = Opt().free_camera && touch::LookActive() && !app::MenuOpen();
     {
@@ -83,6 +87,7 @@ void FilterPad(input::Pad& p) {
 }
 
 void BeforePlayerUpdate(uint32_t player) {
+    ProcessRequests();
     if (!Current(player)) { Reset(); return; }
     if (g_patched && g_player == player) WriteEye(player, g_real_eye);
     g_patched = false;

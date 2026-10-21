@@ -14,5 +14,8 @@ void FilterPad(input::Pad& pad);
 bool Active();
 // Chamado pela linha da pausa, na thread do jogo.
 void Toggle();
+// O painel gráfico solicita a troca; a thread do jogo aplica a alteração.
+void RequestToggle();
+void ProcessRequests();
 
 }  // namespace game::free_camera

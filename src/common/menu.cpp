@@ -19,6 +19,7 @@
 #include "audio/output.h"
 #include "common/keys.h"
 #include "common/menu.h"
+#include "common/camera_tools.h"
 #include "common/mouse_keyboard.h"
 #include "common/options.h"
 #include "game/ads_ak47.h"
@@ -938,6 +939,7 @@ void DrawUi(double fps) {
         PollCapture();
         DrawPanel();
     }
+    camera_tools::Draw();
 }
 
 }  // namespace app

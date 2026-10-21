@@ -10,6 +10,7 @@
 #include "core/input.h"
 #include "game/layout.h"
 #include "game/free_camera.h"
+#include "game/camera_adjust.h"
 #include "xdk/d3d8.h"
 #include "xdk/hle.h"
 #include "xdk/layout.h"
@@ -190,11 +191,12 @@ static float g_gun = 1.0f;  // the gun's picture over the view's
 // ecx the weapon, xmm0 its zoom. Scripted cameras write theirs after this
 void FieldOfView(X86Context& ctx, uint8_t*) {
     game::free_camera::View(R32(ctx.ecx + kWeaponOwner));
+    game::camera_adjust::View(R32(ctx.ecx + kWeaponOwner));
     uint32_t data = R32(ctx.ecx + kWeaponData);
     float aim = data ? G<float>(data + kDataAimZoom) : 1;
     float zoom = ctx.xmm[0].f[0];
     float hip = aim > 1 ? std::clamp((aim - zoom) / (aim - 1), 0.0f, 1.0f) : 1.0f;
-    float view = 1 + (Widen(game::Opt().fov) - 1) * hip;
+    float view = 1 + (Widen(game::camera_adjust::Fov(game::Opt().fov)) - 1) * hip;
     g_gun = view / (1 + (Widen(game::Opt().viewmodel_fov) - 1) * hip);
     float& fov = ctx.xmm[1].f[0];
     if (view != 1) fov = std::atan(std::tan(fov * kHalf) * view) / kHalf;

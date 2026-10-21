@@ -6,9 +6,11 @@
 #include "app/app.h"
 #include "audio/output.h"
 #include "common/menu.h"
+#include "common/camera_tools.h"
 #include "common/mouse_keyboard.h"
 #include "common/options.h"
 #include "game/free_camera.h"
+#include "game/camera_adjust.h"
 
 namespace game {
 
@@ -18,7 +20,7 @@ namespace {
 void Pad(int port, input::Pad& pad) {
     input::SeenPad(pad);
     if (port == 0) pad.connected = true;
-    if (app::MenuOpen()) pad = input::Pad{.connected = pad.connected};
+    if (app::MenuOpen() || camera_tools::Modal()) pad = input::Pad{.connected = pad.connected};
     else if (port == 0) {
         input::Keyboard(pad);
         free_camera::FilterPad(pad);
@@ -51,6 +53,7 @@ void Load(const void* table) {
 
 // after the settings load, before boot
 void Init() {
+    camera_adjust::LoadPreferences();
     BootLanguage();  // latched before the options can change the setting
     input::LoadBindings();
     audio::SetOutputMode(Opt().audio_output);
@@ -112,6 +115,10 @@ const app::GameInfo app::kGame = {
                 {"no_recoil", &game::Opt().no_recoil, nullptr},
                 {"game_speed", nullptr, &game::Opt().game_speed},
                 {"free_camera_speed", nullptr, &game::Opt().free_camera_speed},
+                {"camera_side", nullptr, &game::Opt().camera_side},
+                {"camera_height", nullptr, &game::Opt().camera_height},
+                {"camera_distance", nullptr, &game::Opt().camera_distance},
+                {"camera_fov", nullptr, &game::Opt().camera_fov},
                 {"ads_ak47", &game::Opt().ads_ak47, nullptr},
                 {"ads_ak47_type", nullptr, &game::Opt().ads_ak47_type},
                 {"ads_ak47_x", nullptr, &game::Opt().ads_ak47_x},

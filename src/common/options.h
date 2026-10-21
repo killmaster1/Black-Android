@@ -42,6 +42,8 @@ struct Options {
     bool god_mode = false;  // cheat: no hit takes the player's health
     bool one_hit_kill = false;  // cheat: any hit of the player's bullets kills
     bool infinite_grenades = false;  // cheat: throwing a grenade keeps the count
+    // Perfil da câmera em centésimos de unidade, com 1000 representando zero.
+    uint32_t camera_side = 1000, camera_height = 1000, camera_distance = 1000, camera_fov = 70;
     bool ads_ak47 = false;  // Mira de ferro calibrável, restrita ao tipo registrado pelo jogador.
     uint32_t ads_ak47_type = 255;  // 255 significa que nenhuma AK47 foi registrada.
     // 1000 representa zero. Posição em centésimos de unidade; ângulos em décimos de grau.

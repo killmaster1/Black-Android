@@ -10,6 +10,7 @@
 
 #include "common/mouse_keyboard.h"
 #include "common/options.h"
+#include "common/camera_tools.h"
 #include "core/log.h"
 #include "game/flash.h"
 #include "game/layout.h"
@@ -339,6 +340,9 @@ void Menu(X86Context& ctx, uint32_t ui) {
     const char* name = static_cast<const char*>(HostPtr(ui + kPageName));
     bool menu = IsMenuPage(name);
     input::SetMenu(menu);
+    uint32_t game = R32(kGame);
+    bool mission = game && R32(kWorld) && R32(game + kGameState) != game + kFrontEnd;
+    camera_tools::SetContext(mission, menu);
     int wheel = input::TakeWheel();
     Pointer p;
     bool pointer = menu && !game::OptionsCapturing() && input::Cursor(p.x, p.y, p.down);
