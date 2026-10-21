@@ -34,8 +34,7 @@ std::atomic<unsigned> g_toggle_requests{0};
 
 // Só a thread do jogo acessa a memória emulada e a posição da câmera.
 uint32_t g_player = 0;
-Point g_position{}, g_real_eye{};
-bool g_patched = false;
+Point g_position{};
 bool g_stepped = false;
 Clock::time_point g_last{};
 
@@ -44,9 +43,6 @@ Point Read(uint32_t address) {
     std::memcpy(p.data(), kernel::HostPtr(address), sizeof(p));
     return p;
 }
-void WriteEye(uint32_t player, const Point& p) {
-    std::memcpy(kernel::HostPtr(player + kEye), p.data(), sizeof(p));
-}
 bool Current(uint32_t player) {
     uint32_t world = kernel::R32(layout::kWorld);
     return world && player == world + layout::kWorldPlayer;
@@ -54,17 +50,20 @@ bool Current(uint32_t player) {
 void Reset() {
     if (g_active.exchange(false)) LOGI("câmera livre: desligada");
     g_player = 0;
-    g_patched = false;
     g_last = {};
 }
 }  // namespace
 
 bool Active() { return g_active.load(); }
+bool Position(std::array<float, 3>& position) {
+    if (!Active() || !Opt().free_camera || !Current(g_player)) return false;
+    position = g_position;
+    return true;
+}
 
 void Toggle() {
     Opt().free_camera = !Opt().free_camera;
     if (!Opt().free_camera) {
-        if (g_patched && Current(g_player)) WriteEye(g_player, g_real_eye);
         Reset();
     }
 }
@@ -89,8 +88,6 @@ void FilterPad(input::Pad& p) {
 void BeforePlayerUpdate(uint32_t player) {
     ProcessRequests();
     if (!Current(player)) { Reset(); return; }
-    if (g_patched && g_player == player) WriteEye(player, g_real_eye);
-    g_patched = false;
     g_stepped = false;
     if (g_player && g_player != player) Reset();
 }
@@ -107,8 +104,6 @@ void View(uint32_t player) {
     bool play = enabled && controls.play && !app::MenuOpen() && !g_focus_paused &&
                 now - controls.read < std::chrono::milliseconds(250);
     if (!play) {
-        if (g_patched && g_player == player) WriteEye(player, g_real_eye);
-        g_patched = false;
         // A pausa preserva a posição da câmera, sem acumular tempo de movimento.
         if (!enabled) Reset();
         else g_last = now;
@@ -130,10 +125,7 @@ void View(uint32_t player) {
         g_last = now;
         g_stepped = true;
     }
-    // FieldOfView e o fim da atualização do jogador podem passar aqui no mesmo quadro.
-    if (!g_patched || eye != g_position) g_real_eye = eye;
-    WriteEye(player, g_position);
-    g_patched = true;
+
 }
 
 void AfterPlayerUpdate(uint32_t player) { View(player); }

@@ -21,7 +21,9 @@ std::atomic<bool> g_mission{false}, g_paused{true}, g_cheats{false}, g_visible{f
 // Desenho e eventos acessam estes dados sob app::UiLock.
 Rect g_bounds;
 PanelInput g_input;
-bool g_minimized = false, g_right = false;
+bool g_minimized = false, g_right = false, g_snap_requested = false;
+int g_last_mode = -1;
+ImVec2 g_editor_size{}, g_cheats_size{};
 float g_mouse_x = 0, g_mouse_y = 0;
 const char* g_notice = "";
 
@@ -62,7 +64,7 @@ void DrawEditor() {
     }
     if (ImGui::SmallButton("Recolher")) g_minimized = true;
     ImGui::SameLine();
-    if (ImGui::SmallButton(g_right ? "Mover p/ esquerda" : "Mover p/ direita")) g_right = !g_right;
+    if (ImGui::SmallButton(g_right ? "Mover p/ esquerda" : "Mover p/ direita")) { g_right = !g_right; g_snap_requested = true; }
     if (ImGui::BeginTabBar("##ajustes")) {
         if (ImGui::BeginTabItem("Camera")) {
             auto p = game::camera_adjust::Get();
@@ -116,24 +118,39 @@ void Draw() {
     ImGui::GetIO().MouseDrawCursor = visible && ImGui::GetIO().MouseSource != ImGuiMouseSource_TouchScreen;
     if (!visible) return;
     auto display = ImGui::GetIO().DisplaySize;
-    float width = std::clamp(display.x * 0.25f, 180.0f, 300.0f);
-    // O painel permanece na borda escolhida e deixa o centro da imagem livre.
-    float x = g_right ? display.x - width - 8 : 8;
-    ImGui::SetNextWindowPos(ImVec2(x, display.y * 0.12f), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(width, cheats ? std::min(230.0f, display.y*0.75f) :
-                                  g_minimized ? 65.0f : std::min(470.0f, display.y*0.76f)), ImGuiCond_Always);
-    ImGui::SetNextWindowBgAlpha(0.85f);
-    auto flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
-                 ImGuiWindowFlags_NoSavedSettings;
+    float width = std::clamp(display.x * 0.35f, 280.0f, 440.0f);
+    int mode = cheats ? 0 : g_minimized ? 2 : 1;
+    ImVec2 default_size(width, cheats ? std::min(300.0f, display.y*0.82f) : std::min(600.0f, display.y*0.82f));
+    ImVec2 wanted = mode == 0 && g_cheats_size.x ? g_cheats_size :
+                    mode == 1 && g_editor_size.x ? g_editor_size : default_size;
+    if (mode == 2) wanted = ImVec2(g_editor_size.x ? g_editor_size.x : width, 85);
+    float x = g_right ? display.x - wanted.x - 8 : 8;
+    // A posição inicial fica na lateral; arrastar o título não é desfeito no quadro seguinte.
+    ImGui::SetNextWindowPos(ImVec2(x, display.y * 0.10f), g_snap_requested ? ImGuiCond_Always : ImGuiCond_FirstUseEver);
+    g_snap_requested = false;
+    ImGui::SetNextWindowSize(wanted, mode != g_last_mode ? ImGuiCond_Always : ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(std::min(280.0f, display.x-16), mode == 2 ? 65.0f : 200.0f),
+                                       ImVec2(display.x-16, display.y-16));
+    ImGui::SetNextWindowBgAlpha(0.90f);
+    ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10,8));
+    auto flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings;
+    if (mode == 2) flags |= ImGuiWindowFlags_NoResize;
     if (!cheats) flags |= ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNavFocus;
     bool content = ImGui::Begin(cheats ? "Cheats###ferramentas_camera" : "Ajustes de camera###ferramentas_camera", nullptr, flags);
+    ImGui::SetWindowFontScale(1.10f);
     auto pos = ImGui::GetWindowPos(), size = ImGui::GetWindowSize();
+    g_right = pos.x + size.x/2 > display.x/2;
+    if (mode == 0) g_cheats_size = size;
+    if (mode == 1) g_editor_size = size;
+    g_last_mode = mode;
     g_bounds = {pos.x, pos.y, size.x, size.y};
     if (content) {
         if (cheats) DrawCheats();
         else DrawEditor();
     }
     ImGui::End();
+    ImGui::PopStyleVar();
 }
 
 bool RouteEvent(const SDL_Event& e) {

@@ -13,6 +13,8 @@
 #include "common/panel_input.h"
 #include "core/log.h"
 #include "game/camera_adjust.h"
+#include "game/free_camera.h"
+#include "core/input.h"
 #include "game/layout.h"
 #include "xdk/hle.h"
 
@@ -51,8 +53,17 @@ int main() {
     camera_tools::SetContext(true,true); camera_tools::OpenCheats(); Frame();
     assert(camera_tools::Visible() && camera_tools::Modal());
     auto* window=ImGui::FindWindowByName("Cheats###ferramentas_camera");
-    assert(window && window->Active && window->Size.x<=300);
+    assert(window && window->Active && window->Size.x>=400 && window->Size.x<=440);
     assert(window->Pos.x+window->Size.x<640);  // O centro da tela fica livre.
+    // Arrasta de verdade a barra de título e verifica a posição nos quadros seguintes.
+    ImVec2 old_pos = window->Pos;
+    io.AddMousePosEvent(old_pos.x+80,old_pos.y+12); Frame();
+    io.AddMouseButtonEvent(0,true); Frame();
+    io.AddMousePosEvent(old_pos.x+160,old_pos.y+70); Frame();
+    io.AddMouseButtonEvent(0,false); Frame();
+    assert(window->Pos.x > old_pos.x+50 && window->Pos.y > old_pos.y+30);
+    auto dragged = window->Pos; Frame();
+    assert(window->Pos.x == dragged.x && window->Pos.y == dragged.y);
     SDL_Event e{}; e.type=SDL_EVENT_FINGER_DOWN; e.tfinger.fingerID=10;
     e.tfinger.x=(window->Pos.x+20)/1280; e.tfinger.y=(window->Pos.y+40)/720;
     assert(camera_tools::RouteEvent(e));
@@ -66,18 +77,35 @@ int main() {
     e.type=SDL_EVENT_FINGER_MOTION; assert(!camera_tools::RouteEvent(e));
 
     std::vector<uint8_t> memory(4*1024*1024); kernel::g_base=memory.data();
-    constexpr uint32_t world=0x10000, player=world+layout::kWorldPlayer;
+    constexpr uint32_t world=0x10000, player=world+layout::kWorldPlayer, manager=0x20000;
     kernel::W32(layout::kWorld,world);
     Put(player+0xD0,{1,0,0}); Put(player+0xE0,{0,1,0}); Put(player+0xF0,{0,0,1}); Put(player+0x100,{10,20,30});
+    kernel::W32(0x2D12B8,manager);
+    Put(manager+0x770,{10,20,30});
+    std::vector<uint8_t> original_player(memory.begin()+player, memory.begin()+player+0x900);
     using namespace game::camera_adjust;
     Set({0.1f,0.2f,0.3f,80}); Enable(true);
-    BeforePlayerUpdate(player); View(player);
-    auto eye=Read(player+0x100);
+    BeforeRenderCamera(manager); ApplyRenderCamera(manager);
+    auto eye=Read(manager+0x770);
     assert(Near(eye[0],10.1f) && Near(eye[1],20.2f) && Near(eye[2],30.3f));
-    View(player); assert(Read(player+0x100)==eye);  // Não acumula o deslocamento entre hooks do mesmo quadro.
-    Set({0.5f,0,0,80}); View(player); assert(Near(Read(player+0x100)[0],10.5f));
-    BeforePlayerUpdate(player); assert(Read(player+0x100)==(Point{10,20,30}));
-    View(player); Enable(false); View(player); assert(Read(player+0x100)==(Point{10,20,30}));
+    ApplyRenderCamera(manager); assert(Read(manager+0x770)==eye);
+    Set({0.5f,0,0,80}); ApplyRenderCamera(manager); assert(Near(Read(manager+0x770)[0],10.5f));
+    BeforeRenderCamera(manager); assert(Read(manager+0x770)==(Point{10,20,30}));
+    ApplyRenderCamera(manager); Enable(false); BeforeRenderCamera(manager);
+    assert(Read(manager+0x770)==(Point{10,20,30}));
+    assert(std::memcmp(kernel::HostPtr(player),original_player.data(),original_player.size())==0);
+    // A câmera livre também só fornece uma posição ao renderizador, sem mover o personagem.
+    game::Opt().free_camera=true;
+    input::Pad pad{.connected=true};
+    game::free_camera::FilterPad(pad);
+    game::free_camera::BeforePlayerUpdate(player);
+    game::free_camera::View(player);
+    Put(manager+0x770,{100,200,300});
+    BeforeRenderCamera(manager); ApplyRenderCamera(manager);
+    assert(Read(manager+0x770)==(Point{10,20,30}));
+    assert(std::memcmp(kernel::HostPtr(player),original_player.data(),original_player.size())==0);
+    game::free_camera::Toggle(); BeforeRenderCamera(manager);
+    assert(Read(manager+0x770)==(Point{100,200,300}));
     assert(Fov(90)==90); Enable(true); assert(Fov(90)==80);
     StorePreferences(); Set({}); LoadPreferences(); assert(Near(Get().side,0.5f) && Get().fov==80);
     Set({std::numeric_limits<float>::quiet_NaN(),99,-99,999});

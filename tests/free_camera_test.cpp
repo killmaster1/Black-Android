@@ -75,7 +75,9 @@ int main() {
     // O jogo atualiza os olhos físicos mais tarde; a câmera livre deve manter sua posição.
     Eye(player, {40, 50, 60});
     AfterPlayerUpdate(player);
-    assert(Eye(player) == (Point{10, 20, 30}));
+    assert(Eye(player) == (Point{40, 50, 60}));
+    Point detached;
+    assert(Position(detached) && detached == (Point{10,20,30}));
     BeforePlayerUpdate(player);
     assert(Eye(player) == (Point{40, 50, 60}));
     app::menu = true;
@@ -93,7 +95,8 @@ int main() {
     AfterPlayerUpdate(player);
     Eye(player, {70, 80, 90});
     AfterPlayerUpdate(player);
-    assert(Eye(player) == (Point{40, 50, 60}));
+    assert(Eye(player) == (Point{70, 80, 90}));
+    assert(Position(detached) && detached == (Point{40,50,60}));
     app::menu = true;
     Toggle();
     assert(!Active() && Eye(player) == (Point{70, 80, 90}));  // Desliga entre os hooks de atualização.
@@ -126,5 +129,5 @@ int main() {
     assert(game::Opt().free_camera);  // Duas solicitações se anulam.
     RequestToggle(); ProcessRequests();
     assert(!game::Opt().free_camera);
-    std::puts("Câmera livre: passaram os testes de movimento, taxa de quadros, isolamento dos controles, restauração dos olhos, menus e troca de mundo.");
+    std::puts("Câmera livre: passaram os testes de movimento, taxa de quadros, isolamento dos controles, preservação do personagem, menus e troca de mundo.");
 }

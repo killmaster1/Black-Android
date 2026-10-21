@@ -9,6 +9,7 @@ void Enable(bool enabled);
 void LoadPreferences();
 void StorePreferences();
 uint32_t Fov(uint32_t original);
-void BeforePlayerUpdate(uint32_t player);
-void View(uint32_t player);
+// Hooks da câmera de renderização; não modificam a matriz do jogador.
+void BeforeRenderCamera(uint32_t manager);
+void ApplyRenderCamera(uint32_t manager);
 }

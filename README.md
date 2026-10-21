@@ -90,7 +90,7 @@ O botão de granada envia o comando LT e o de atirar envia RT; por isso eles con
 
 A câmera começa na posição dos olhos do jogador. Avançar acompanha a direção da visão; o movimento lateral permanece horizontal. Enquanto o mod está ligado, os comandos de andar e usar armas são redirecionados para a câmera. Os menus continuam acessíveis.
 
-Abrir o menu suspende o movimento e preserva a posição da câmera. Desligar o mod pela seção Cheats solicita a restauração dos olhos na thread do jogo, inclusive durante a pausa. O personagem não é teletransportado; o mundo continua funcionando e a invulnerabilidade é uma opção separada. O termo noclip aqui descreve o deslocamento da câmera através dos cenários.
+Abrir o menu suspende o movimento e preserva a posição da câmera. Desligar o mod pela seção Cheats solicita o retorno à visão original na thread do jogo, inclusive durante a pausa. O personagem não é teletransportado; o mundo continua funcionando e a invulnerabilidade é uma opção separada. O termo noclip aqui descreve o deslocamento da câmera através dos cenários.
 
 O funcionamento da câmera livre foi confirmado pelo usuário em um dispositivo Android. A nova seção Cheats e o painel lateral precisam ser verificados no APK atualizado. A renderização de áreas distantes continua dependendo das regras do jogo.
 
@@ -112,7 +112,7 @@ O perfil tem transição suave e ajustes de posição, distância e rotação. O
 
 ### Painel lateral de ajustes em tempo real
 
-Abra **Pausa → CHEATS → Ajuste de camera**, volte à missão e ajuste altura, posição lateral, distância e FOV pelo pequeno painel do ImGui. A aba **AK47 (ADS)** também permite calibrar a arma sem reabrir as opções. O painel pode ser recolhido, movido para a outra lateral e usado para salvar o perfil.
+Abra **Pausa → CHEATS → Ajuste de camera**, volte à missão e ajuste altura, posição lateral, distância e FOV pelo painel do ImGui. A aba **AK47 (ADS)** também permite calibrar a arma sem reabrir as opções. O painel começa maior, pode ser arrastado pela barra de título, redimensionado pelo canto, recolhido ou encaixado em uma das laterais. O botão de salvar registra o perfil. A câmera livre e o ajuste usam a câmera de renderização sem alterar a matriz do jogador.
 
 Os toques dentro do painel são separados dos controles de tiro e visão. Consulte o [guia do painel e seus testes](docs/painel-camera.md).
 

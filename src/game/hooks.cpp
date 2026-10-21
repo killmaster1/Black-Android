@@ -191,7 +191,6 @@ static float g_gun = 1.0f;  // the gun's picture over the view's
 // ecx the weapon, xmm0 its zoom. Scripted cameras write theirs after this
 void FieldOfView(X86Context& ctx, uint8_t*) {
     game::free_camera::View(R32(ctx.ecx + kWeaponOwner));
-    game::camera_adjust::View(R32(ctx.ecx + kWeaponOwner));
     uint32_t data = R32(ctx.ecx + kWeaponData);
     float aim = data ? G<float>(data + kDataAimZoom) : 1;
     float zoom = ctx.xmm[0].f[0];

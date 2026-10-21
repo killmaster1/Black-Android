@@ -571,3 +571,12 @@ after = true
 at = 0x1F813B
 call = "GameLanguage"
 after = true
+
+# src/game/camera_hooks.cpp: restaura antes da atualização e ajusta antes da composição da câmera.
+[[hook]]
+at = 0x2033AF
+call = "CameraBeforeSetup"
+
+[[hook]]
+at = 0x20348D
+call = "CameraAfterSetup"
