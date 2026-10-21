@@ -64,6 +64,13 @@ bool g_invulnerable;  // the flag is ours, cleared when god mode goes off
 // its damage calls test
 X86_EXTERN_FUNC(__imp__sub_001E5FA0);
 X86_FUNC(sub_001E5FA0) {
+    static int hook_diag_tick = 0;
+
+    if (++hook_diag_tick % 120 == 0) {
+        LOGI("HOOK sub_001E5FA0 calls=%d ecx=0x%08X player=0x%08X",
+             hook_diag_tick, ctx.ecx, Player());
+    }
+
     uint32_t me = ctx.ecx;
     if (me && me == Player() && R32(me + kCharKind) == kPlayerKind) {
         // TEMPORARY DIAGNOSTIC: every half second, log the player's float fields that moved. Walk, jump and climb
