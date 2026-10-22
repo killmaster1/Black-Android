@@ -53,6 +53,11 @@ int main() {
     assert(!Project({100,0,10}, camera,1280,720,x,y));
     assert(!Project({10,0,0}, camera,1280,720,x,y));
     assert(!Project({10,0,10}, camera,0,720,x,y));
+    Box box;
+    assert(ProjectBox({10,0,10},1.8f,camera,1280,720,box));
+    assert(box.left<640 && box.right>640 && box.top<360 && std::abs(box.bottom-360)<0.01f);
+    assert(!ProjectBox({10,0,-10},1.8f,camera,1280,720,box));
+    assert(!ProjectBox({10,0,10},0,camera,1280,720,box));
     Point point{10,0,10};
     state.Observe(123,&point); state.Camera(camera);
     auto snapshot=state.Get();

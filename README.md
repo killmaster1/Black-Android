@@ -112,7 +112,7 @@ O perfil tem transição suave e ajustes de posição, distância e rotação. O
 
 ### Painel lateral de ajustes em tempo real
 
-Abra **Pausa → CHEATS → Ajuste de camera**, volte à missão e ajuste altura, posição lateral, distância e FOV pelo painel do ImGui. A aba **AK47 (ADS)** também permite calibrar a arma sem reabrir as opções. O painel começa maior, pode ser arrastado pela barra de título, redimensionado pelo canto, recolhido ou encaixado em uma das laterais. O botão de salvar registra o perfil. A câmera livre e o ajuste usam a câmera de renderização sem alterar a matriz do jogador.
+Abra **Pausa → CHEATS → Camera → Ajuste de camera**, volte à missão e ajuste altura, posição lateral, distância e FOV pelo painel do ImGui. A aba **AK47 (ADS)** também permite calibrar a arma sem reabrir as opções. O painel começa maior, pode ser arrastado pela barra de título, redimensionado pelo canto, recolhido ou encaixado em uma das laterais. O botão de salvar registra o perfil. A câmera livre e o ajuste usam a câmera de renderização sem alterar a matriz do jogador.
 
 Os toques dentro do painel são separados dos controles de tiro e visão. Consulte o [guia do painel e seus testes](docs/painel-camera.md).
 
@@ -162,3 +162,7 @@ No GitHub, acompanhe a execução **Android CI** na aba **Actions**. Após a con
 - [xemu](https://github.com/xemu-project/xemu) e [Cxbx-Reloaded](https://github.com/Cxbx-Reloaded), usados como referência de hardware e APIs do Xbox pelo XboxXBE-Recomp.
 
 *Black* é uma marca de seus respectivos proprietários. Este projeto não é afiliado nem endossado por eles.
+
+### Menu de cheats e ESP
+
+O menu **Pausa → CHEATS** reúne os cheats existentes em categorias laterais, com fundo preto e detalhes em laranja. Inclui câmera livre, ajustes, ESP Linha e ESP Caixa com altura estimada ajustável. Os contadores do diagnóstico são opcionais. Consulte o [guia do menu](docs/menu-cheats.md) para controles e limitações.

@@ -35,6 +35,9 @@ struct Options {
     float right_sensitivity = 1.0f;
     uint32_t audio_output = 0;  // audio::kOutputAuto, kOutputStereo, kOutputSurround or kOutputMono
     std::string language = "int";  // one of kLanguages
+    // Desenho do ESP: caixas usam altura estimada, ajustável em centésimos de unidade.
+    bool esp_line = false, esp_box = false, esp_diagnostic_hud = false;
+    uint32_t esp_box_height = 180;
     bool infinite_ammo = false;  // cheat: the player's magazine and reserve never go down
     uint32_t rapid_fire = 1;  // cheat: times the player's rate of fire, 1 the game's
     bool no_recoil = false;  // cheat: the player's shots do not kick the view

@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <algorithm>
 #include <cmath>
 
 namespace game::esp_diagnostic {
@@ -25,4 +26,20 @@ inline bool Project(const Point& point, const Matrix& matrix, float width, float
     x = u * width; y = v * height;
     return true;
 }
+struct Box { float left = 0, top = 0, right = 0, bottom = 0; };
+// Retângulo aproximado a partir dos pés e de uma altura configurável no eixo Y do mundo.
+inline bool ProjectBox(Point feet, float height, const Matrix& matrix, float width, float screen_height, Box& box) {
+    if (!std::isfinite(height) || height <= 0) return false;
+    Point head = feet; head[1] += height;
+    float fx, fy, hx, hy;
+    if (!Project(feet,matrix,width,screen_height,fx,fy) || !Project(head,matrix,width,screen_height,hx,hy)) return false;
+    const float top = std::min(fy,hy), bottom = std::max(fy,hy);
+    const float projected_height = bottom-top;
+    if (projected_height < 2) return false;
+    const float half_width = projected_height*0.22f;
+    const float center = (fx+hx)*0.5f;
+    box = {std::max(0.0f,center-half_width), top, std::min(width,center+half_width), bottom};
+    return box.right > box.left;
+}
+
 }

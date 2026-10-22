@@ -51,11 +51,14 @@ int main() {
     auto& io=ImGui::GetIO(); io.IniFilename=nullptr; io.DisplaySize={1280,720}; io.DeltaTime=1.0f/60;
     unsigned char* pixels; int width,height; io.Fonts->GetTexDataAsRGBA32(&pixels,&width,&height);
     camera_tools::SetContext(false,false); Frame(); assert(!camera_tools::Visible());
+    const auto original_background=ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
     camera_tools::SetContext(true,true); camera_tools::OpenCheats(); Frame();
+    const auto restored_background=ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
+    assert(original_background.x==restored_background.x && original_background.w==restored_background.w);
     assert(camera_tools::Visible() && camera_tools::Modal());
     auto* window=ImGui::FindWindowByName("Cheats###ferramentas_camera");
-    assert(window && window->Active && window->Size.x>=400 && window->Size.x<=440);
-    assert(window->Pos.x+window->Size.x<640);  // O centro da tela fica livre.
+    assert(window && window->Active && window->Size.x>=600 && window->Size.x<=780);
+    assert(window->Pos.x+window->Size.x<1280);  // O menu maior cabe na tela durante a pausa.
     // Arrasta de verdade a barra de título e verifica a posição nos quadros seguintes.
     ImVec2 old_pos = window->Pos;
     io.AddMousePosEvent(old_pos.x+80,old_pos.y+12); Frame();
@@ -78,6 +81,7 @@ int main() {
     e.type=SDL_EVENT_FINGER_MOTION; assert(!camera_tools::RouteEvent(e));
 
     // O texto de diagnóstico aparece em jogo sem abrir um painel ou capturar gestos.
+    game::Opt().esp_diagnostic_hud=true;
     game::esp_diagnostic::State().Enable(true);
     camera_tools::SetContext(true,false); Frame();
     auto* hud = ImGui::FindWindowByName("Diagnostico ESP###esp_diagnostic_hud");
@@ -90,6 +94,26 @@ int main() {
     camera_tools::SetContext(false,false); Frame(); assert(!hud->Active);
     game::esp_diagnostic::State().Enable(false);
     camera_tools::SetContext(true,false); Frame(); assert(!hud->Active);
+
+    // Linhas e caixas funcionam com pontos e contadores ocultos, sem capturar controles.
+    game::Opt().esp_line=game::Opt().esp_box=true;
+    game::Opt().esp_diagnostic_hud=false;
+    camera_tools::SetContext(true,false); Frame();
+    assert(game::esp_diagnostic::State().Enabled());
+    game::esp_diagnostic::State().ShowPoints(false);
+    game::esp_diagnostic::State().Tick(1,1);
+    game::esp_diagnostic::Matrix projection{};
+    projection[0]=0.5f; projection[5]=-0.5f;
+    projection[8]=projection[9]=0.5f; projection[10]=1;
+    game::esp_diagnostic::State().Camera(projection);
+    game::esp_diagnostic::Live live; live.valid=true; live.count=1;
+    live.points[0]={{0,0,10},1,0};
+    game::esp_diagnostic::State().PublishLive(live);
+    Frame();
+    assert(ImGui::GetForegroundDrawList()->VtxBuffer.Size>0);
+    assert(!hud->Active && !camera_tools::Visible() && !camera_tools::Modal());
+    game::Opt().esp_line=game::Opt().esp_box=false;
+    game::esp_diagnostic::State().Enable(false);
 
     std::vector<uint8_t> memory(4*1024*1024); kernel::g_base=memory.data();
     constexpr uint32_t world=0x10000, player=world+layout::kWorldPlayer, manager=0x20000;

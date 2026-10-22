@@ -28,6 +28,7 @@ int g_last_mode = -1;
 ImVec2 g_editor_size{}, g_cheats_size{};
 float g_mouse_x = 0, g_mouse_y = 0;
 const char* g_notice = "";
+int g_category = 0;
 
 void Slider(const char* label, float& value, float minimum, float maximum) {
     ImGui::TextUnformatted(label);
@@ -50,7 +51,7 @@ void DrawDiagnosticHud() {
         app::MenuOpen() || !host::Foreground()) return;
     const auto display = ImGui::GetIO().DisplaySize;
     uint32_t drawn = 0;
-    if (diagnostic.points_enabled && diagnostic.camera_valid) {
+    if ((diagnostic.points_enabled || game::Opt().esp_line || game::Opt().esp_box) && diagnostic.camera_valid) {
         auto* draw = ImGui::GetForegroundDrawList();
         const auto& points = diagnostic.live.valid ? diagnostic.live.points : diagnostic.points;
         const auto count = diagnostic.live.valid ? diagnostic.live.count : diagnostic.point_count;
@@ -62,12 +63,24 @@ void DrawDiagnosticHud() {
             // Amarelo: leitura recente. Laranja: última posição observada, que pode estar desatualizada.
             auto color = point.age <= 2 ? IM_COL32(255,235,40,255) : IM_COL32(255,145,40,180);
             ImVec2 center(x,y);
+            if (diagnostic.live.valid && game::Opt().esp_line)
+                draw->AddLine(ImVec2(display.x*0.5f,display.y-12), center, IM_COL32(100,255,100,220), 1.5f);
+            if (diagnostic.live.valid && game::Opt().esp_box) {
+                game::esp_diagnostic::Box box;
+                float height = float(std::clamp(game::Opt().esp_box_height,50u,350u))/100;
+                if (game::esp_diagnostic::ProjectBox(point.position,height,diagnostic.camera,display.x,display.y,box)) {
+                    draw->AddRect(ImVec2(box.left,box.top),ImVec2(box.right,box.bottom),IM_COL32(0,0,0,220),0,0,3.5f);
+                    draw->AddRect(ImVec2(box.left,box.top),ImVec2(box.right,box.bottom),IM_COL32(100,255,100,240),0,0,1.5f);
+                }
+            }
+            if (!diagnostic.points_enabled) continue;
             draw->AddCircleFilled(center, 5, IM_COL32(0,0,0,220));
             draw->AddCircleFilled(center, 3, color);
             char label[24]; std::snprintf(label, sizeof(label), "%c%u", diagnostic.live.valid ? 'N' : 'C', point.id);
             draw->AddText(ImVec2(x+7,y-8), color, label);
         }
     }
+    if (!game::Opt().esp_diagnostic_hud) return;
     // Abaixo da fileira superior de controles, próximo da pausa no layout padrão.
     ImGui::SetNextWindowPos(ImVec2(display.x * 0.527f, display.y * 0.15f), ImGuiCond_Always, ImVec2(0.5f, 0));
     ImGui::SetNextWindowBgAlpha(0.72f);
@@ -86,9 +99,15 @@ void DrawDiagnosticHud() {
     }
     ImGui::End();
 }
-void DrawCheats() {
+void IntSlider(const char* label, uint32_t& value, int minimum, int maximum, const char* format = "%d") {
+    int current = int(std::clamp(value,uint32_t(minimum),uint32_t(maximum)));
+    ImGui::TextUnformatted(label); ImGui::SetNextItemWidth(-1);
+    if (ImGui::SliderInt((std::string("##")+label).c_str(), &current,minimum,maximum,format,ImGuiSliderFlags_NoInput))
+        value = uint32_t(current);
+}
+void CameraSwitches() {
     bool free = game::Opt().free_camera;
-    if (ImGui::Checkbox("Camera livre", &free)) {
+    if (ImGui::Checkbox("Camera livre / noclip", &free)) {
         game::free_camera::RequestToggle();
         if (free) game::camera_adjust::Enable(false);
     }
@@ -97,24 +116,93 @@ void DrawCheats() {
         game::camera_adjust::Enable(adjust);
         if (adjust && game::Opt().free_camera) game::free_camera::RequestToggle();
     }
-    auto diagnostic = game::esp_diagnostic::State().Get();
-    if (ImGui::Checkbox("Diagnostico ESP", &diagnostic.enabled))
-        game::esp_diagnostic::State().Enable(diagnostic.enabled);
-    diagnostic = game::esp_diagnostic::State().Get();
-    if (diagnostic.enabled) {
-        if (ImGui::Checkbox("Pontos de teste", &diagnostic.points_enabled))
-            game::esp_diagnostic::State().ShowPoints(diagnostic.points_enabled);
-        if (diagnostic.live.valid) ImGui::Text("NPCs vivos na lista (teste): %u", diagnostic.live.count);
-        else ImGui::TextUnformatted("Lista de NPCs indisponivel: usando consulta da mira.");
-        ImGui::Text("Candidatos recentes da mira: %u", diagnostic.candidates);
-        ImGui::Text("Enderecos registrados (ate 128): %u", diagnostic.registered);
-        ImGui::Text("Deteccoes desde a ativacao: %u", diagnostic.observations);
-        ImGui::TextWrapped("Consulta da mira: nao e o total de inimigos. Retome a missao: os contadores aparecem no topo da tela. Candidatos expiram apos 120 quadros.");
-    }
-    ImGui::TextWrapped("Ative o ajuste e retome a missao para usar o painel lateral.");
-    ImGui::Separator();
-    if (ImGui::Button("Voltar a pausa", ImVec2(-1, 32))) g_cheats = false;
 }
+void DrawCheats() {
+    static constexpr const char* categories[] = {"Jogador", "Armas", "Jogo", "Camera", "ESP", "Diagnostico"};
+    float sidebar = std::clamp(ImGui::GetContentRegionAvail().x*0.26f,130.0f,180.0f);
+    float height = std::max(90.0f, ImGui::GetContentRegionAvail().y-60);
+    ImGui::BeginChild("categorias",ImVec2(sidebar,height),true);
+    for (int i=0;i<6;++i)
+        if (ImGui::Selectable(categories[i],g_category==i,0,ImVec2(0,36))) g_category=i;
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("opcoes",ImVec2(0,height),true);
+    ImGui::TextColored(ImVec4(1,0.40f,0.12f,1),"%s",categories[g_category]);
+    ImGui::Separator(); ImGui::Spacing();
+    auto& o = game::Opt();
+    switch (g_category) {
+    case 0:
+        ImGui::Checkbox("Invencibilidade",&o.god_mode);
+        ImGui::Checkbox("Matar com um tiro",&o.one_hit_kill);
+        break;
+    case 1:
+        ImGui::Checkbox("Municao infinita",&o.infinite_ammo);
+        ImGui::Checkbox("Granadas infinitas",&o.infinite_grenades);
+        ImGui::Checkbox("Sem recuo",&o.no_recoil);
+        IntSlider("Cadencia de tiro",o.rapid_fire,1,4,"%dx");
+        ImGui::Separator();
+        ImGui::Checkbox("Mira de ferro AK47",&o.ads_ak47);
+        if (ImGui::Button("Registrar AK47 equipada",ImVec2(-1,36)))
+            g_notice = game::ads_ak47::RegisterCurrent() ? "Arma registrada." : "Equipe a AK47 na missao.";
+        ImGui::TextWrapped("Calibre a arma na aba AK47 do painel de ajuste de camera.");
+        break;
+    case 2:
+        IntSlider("Velocidade do jogo",o.game_speed,25,200,"%d%%");
+        ImGui::Checkbox("Liberar todas as missoes",&o.unlock_levels);
+        ImGui::Checkbox("Liberar Black Ops",&o.unlock_black_ops);
+        ImGui::TextWrapped("As liberacoes aparecem na selecao de missoes.");
+        break;
+    case 3: {
+        CameraSwitches();
+        IntSlider("Velocidade da camera livre",o.free_camera_speed,25,1000);
+        ImGui::TextWrapped("No voo: atirar sobe; granada desce. O ajuste abre um painel lateral ao retomar a missao.");
+        bool hidden=game::g_hide_hud.load();
+        if (ImGui::Checkbox("Ocultar HUD do jogo",&hidden)) game::g_hide_hud=hidden;
+        break;
+    }
+    case 4: {
+        bool enabled=game::esp_diagnostic::State().Enabled();
+        if (ImGui::Checkbox("Ativar ESP",&enabled)) {
+            game::esp_diagnostic::State().Enable(enabled);
+            if (!enabled) o.esp_line=o.esp_box=false;
+        }
+        ImGui::Checkbox("ESP Linha",&o.esp_line);
+        ImGui::Checkbox("ESP Caixa",&o.esp_box);
+        float height=float(std::clamp(o.esp_box_height,50u,350u))/100;
+        Slider("Altura estimada da caixa",height,0.5f,3.5f);
+        o.esp_box_height=uint32_t(std::lround(height*100));
+        auto diagnostic=game::esp_diagnostic::State().Get();
+        if (ImGui::Checkbox("Pontos dos personagens",&diagnostic.points_enabled))
+            game::esp_diagnostic::State().ShowPoints(diagnostic.points_enabled);
+        if (ImGui::Button("Desligar ESP",ImVec2(-1,36))) {
+            o.esp_line=o.esp_box=false;
+            game::esp_diagnostic::State().Enable(false);
+        }
+        ImGui::TextWrapped("Pode incluir aliados. A caixa tem altura estimada; ajuste para a postura do personagem.");
+        break;
+    }
+    case 5: {
+        auto diagnostic=game::esp_diagnostic::State().Get();
+        if (ImGui::Checkbox("Ativar leitura de NPCs",&diagnostic.enabled)) {
+            game::esp_diagnostic::State().Enable(diagnostic.enabled);
+            if (!diagnostic.enabled) o.esp_line=o.esp_box=false;
+        }
+        ImGui::Checkbox("Exibir contadores na missao",&game::Opt().esp_diagnostic_hud);
+        ImGui::Text("NPCs vivos (teste): %u",diagnostic.live.count);
+        ImGui::TextWrapped("Lista v2: %s",game::esp_diagnostic::ListStatusText(diagnostic.live.status));
+        ImGui::Text("Uso: %u/%u",diagnostic.live.used,diagnostic.live.capacity);
+        ImGui::Text("Deteccoes da mira: %u",diagnostic.observations);
+        break;
+    }
+    }
+    if (*g_notice) ImGui::TextWrapped("%s",g_notice);
+    ImGui::EndChild();
+    ImGui::Spacing();
+    if (ImGui::Button("Salvar perfil",ImVec2(sidebar,38))) Save();
+    ImGui::SameLine();
+    if (ImGui::Button("Voltar a pausa",ImVec2(-1,38))) g_cheats=false;
+}
+
 void DrawEditor() {
     if (g_minimized) {
         if (ImGui::Button("Ajustar camera", ImVec2(-1, 30))) g_minimized = false;
@@ -170,6 +258,8 @@ bool Visible() { return g_visible.load(); }
 bool Modal() { return g_cheats && g_paused && g_mission; }
 
 void Draw() {
+    if ((game::Opt().esp_line || game::Opt().esp_box) && !game::esp_diagnostic::State().Enabled())
+        game::esp_diagnostic::State().Enable(true);
     DrawDiagnosticHud();
     g_bounds = {};
     bool cheats = Modal();
@@ -179,9 +269,9 @@ void Draw() {
     ImGui::GetIO().MouseDrawCursor = visible && ImGui::GetIO().MouseSource != ImGuiMouseSource_TouchScreen;
     if (!visible) return;
     auto display = ImGui::GetIO().DisplaySize;
-    float width = std::clamp(display.x * 0.35f, 280.0f, 440.0f);
+    float width = cheats ? std::clamp(display.x*0.62f,520.0f,780.0f) : std::clamp(display.x*0.35f,280.0f,440.0f);
     int mode = cheats ? 0 : g_minimized ? 2 : 1;
-    ImVec2 default_size(width, cheats ? std::min(300.0f, display.y*0.82f) : std::min(600.0f, display.y*0.82f));
+    ImVec2 default_size(width, cheats ? std::min(520.0f, display.y*0.82f) : std::min(600.0f, display.y*0.82f));
     ImVec2 wanted = mode == 0 && g_cheats_size.x ? g_cheats_size :
                     mode == 1 && g_editor_size.x ? g_editor_size : default_size;
     if (mode == 2) wanted = ImVec2(g_editor_size.x ? g_editor_size.x : width, 85);
@@ -190,7 +280,7 @@ void Draw() {
     ImGui::SetNextWindowPos(ImVec2(x, display.y * 0.10f), g_snap_requested ? ImGuiCond_Always : ImGuiCond_FirstUseEver);
     g_snap_requested = false;
     ImGui::SetNextWindowSize(wanted, mode != g_last_mode ? ImGuiCond_Always : ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSizeConstraints(ImVec2(std::min(280.0f, display.x-16), mode == 2 ? 65.0f : 200.0f),
+    ImGui::SetNextWindowSizeConstraints(ImVec2(std::min(cheats ? 520.0f : 280.0f, display.x-16), mode == 2 ? 65.0f : std::min(cheats ? 300.0f : 200.0f,display.y-16)),
                                        ImVec2(display.x-16, display.y-16));
     ImGui::SetNextWindowBgAlpha(0.90f);
     ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
@@ -198,8 +288,21 @@ void Draw() {
     auto flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings;
     if (mode == 2) flags |= ImGuiWindowFlags_NoResize;
     if (!cheats) flags |= ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNavFocus;
-    bool content = ImGui::Begin(cheats ? "Cheats###ferramentas_camera" : "Ajustes de camera###ferramentas_camera", nullptr, flags);
-    ImGui::SetWindowFontScale(1.10f);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg,ImVec4(0.025f,0.025f,0.03f,0.97f));
+    ImGui::PushStyleColor(ImGuiCol_ChildBg,ImVec4(0.04f,0.04f,0.045f,0.98f));
+    ImGui::PushStyleColor(ImGuiCol_Border,ImVec4(1,0.25f,0.05f,1));
+    ImGui::PushStyleColor(ImGuiCol_TitleBg,ImVec4(0.55f,0.12f,0.02f,1));
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive,ImVec4(0.85f,0.22f,0.04f,1));
+    ImGui::PushStyleColor(ImGuiCol_CheckMark,ImVec4(1,0.5f,0.12f,1));
+    ImGui::PushStyleColor(ImGuiCol_Header,ImVec4(0.5f,0.16f,0.04f,1));
+    ImGui::PushStyleColor(ImGuiCol_HeaderHovered,ImVec4(0.7f,0.22f,0.05f,1));
+    ImGui::PushStyleColor(ImGuiCol_HeaderActive,ImVec4(0.85f,0.3f,0.05f,1));
+    ImGui::PushStyleColor(ImGuiCol_Button,ImVec4(0.38f,0.12f,0.04f,1));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered,ImVec4(0.7f,0.22f,0.05f,1));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive,ImVec4(0.85f,0.3f,0.05f,1));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize,2);
+    bool content = ImGui::Begin(cheats ? "BLACK - MENU DE CHEATS###ferramentas_camera" : "Ajustes de camera###ferramentas_camera", nullptr, flags);
+    ImGui::SetWindowFontScale(cheats ? 1.4f : 1.10f);
     auto pos = ImGui::GetWindowPos(), size = ImGui::GetWindowSize();
     g_right = pos.x + size.x/2 > display.x/2;
     if (mode == 0) g_cheats_size = size;
@@ -211,7 +314,8 @@ void Draw() {
         else DrawEditor();
     }
     ImGui::End();
-    ImGui::PopStyleVar();
+    ImGui::PopStyleVar(2);
+    ImGui::PopStyleColor(12);
 }
 
 bool RouteEvent(const SDL_Event& e) {
