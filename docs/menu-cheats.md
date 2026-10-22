@@ -1,9 +1,13 @@
 # Menu de cheats no Android
 
-Abra **Pausa → CHEATS**. O menu usa fundo preto, bordas e título em laranja,
+Durante a missão, toque no botão **MOD** ao lado da pausa. Ele acompanha a posição
+do botão de pausa configurada no layout de toque. A ação fica congelada e o menu
+aparece sobre a imagem da missão, sem abrir a página de pausa do jogo.
+Use **Continuar missao**, o botão MOD ou Voltar do Android para fechar e retomar.
+Também continua disponível o caminho **Pausa → CHEATS**. O menu usa fundo preto, bordas e título em laranja,
 categorias na coluna esquerda e opções na direita. Arraste pelo título ou
 redimensione pelo canto. As listas têm rolagem quando não cabem na tela.
-O botão **Voltar a pausa** fecha o painel; depois retome a missão no menu do jogo.
+Ao entrar pelo caminho antigo, o botão **Voltar a pausa** mantém o comportamento anterior.
 
 | Categoria | Opções |
 | --- | --- |
@@ -11,7 +15,7 @@ O botão **Voltar a pausa** fecha o painel; depois retome a missão no menu do j
 | Armas | Munição infinita, granadas infinitas, sem recuo, cadência de 1x a 4x, mira de ferro e registro da AK47 |
 | Jogo | Velocidade de 25% a 200%, liberar todas as missões e liberar Black Ops |
 | Câmera | Câmera livre/noclip, velocidade do voo, ajuste de câmera e ocultar HUD |
-| ESP | Ativar leitura, linhas, caixas, altura estimada da caixa, pontos e desligar ESP |
+| ESP | Ativar leitura, linhas, caixas, vida, contador e direções fora da tela, altura estimada, pontos e desligar ESP |
 | Diagnóstico | Ativar leitura de NPCs, exibir contadores na missão e conferir a lista |
 
 Os cheats da página original de opções usam os mesmos valores deste painel.
@@ -52,3 +56,32 @@ Os testes desenham o menu com ImGui real, verificam arraste, isolamento de toque
 restauração das cores, desenho com contadores ocultos, projeção de caixas, leitura da
 lista, vida/morte e atualização sem depender da consulta da mira.
 O alinhamento das novas caixas e a operação do menu por toque ainda precisam de teste no APK.
+
+## Vida e NPCs fora da tela
+
+Em **ESP**, marque **Mostrar vida** para exibir o valor atual lido do personagem,
+sem convertê-lo em porcentagem. **Contador e direcoes fora da tela** mostra um
+contador vermelho abaixo do botão MOD e linhas vermelhas com setas nas bordas,
+incluindo direções para NPCs atrás da câmera.
+As opções são independentes de ESP Linha/Caixa e são salvas pelo perfil.
+
+O contador considera NPCs vivos da lista carregada, podendo incluir aliados.
+Ele indica personagens fora do campo de visão, usando pés, tronco e cabeça estimados
+para reduzir a contagem de personagens parcialmente visíveis. Não mede oclusão:
+um NPC atrás de uma parede, mas dentro da imagem projetada, não entra nesse contador.
+Não representa inimigos futuros ainda não carregados ou todos os inimigos da missão.
+Se a lista ou a câmera não estiverem disponíveis, mostra `--`.
+
+## Congelamento do menu MOD
+
+A apresentação repete a mesma imagem enquanto o menu direto está aberto, sem
+retornar ao processamento do próximo quadro do jogo. O ImGui continua recebendo
+eventos e sendo desenhado; a saída de áudio é suspensa durante esse intervalo.
+Ao abrir e fechar, os gestos de jogo são limpos para evitar tiro ou movimento preso.
+Os toques fora do painel também são consumidos enquanto ele está aberto.
+A perda de foco mantém o tratamento de suspensão do Android.
+
+Os testes locais verificam o modal independente da pausa, os toques, as direções
+para pontos fora da imagem e atrás da câmera e a cópia do valor da vida.
+A apresentação repetida, a retomada do áudio e o ciclo de foco precisam ser
+verificados no aparelho com o APK completo.

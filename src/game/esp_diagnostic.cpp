@@ -46,7 +46,7 @@ game::esp_diagnostic::Live ReadLive() {
         game::esp_diagnostic::Point position;
         std::memcpy(position.data(), kernel::HostPtr(entity + 0xA0), sizeof(position));
         if (!game::esp_diagnostic::Finite(position)) continue;
-        result.points[result.count++] = {position, i+1, 0};
+        result.points[result.count++] = {position, i+1, 0, health};
     }
     result.valid = true; result.status = game::esp_diagnostic::ListStatus::Ready;
     return result;

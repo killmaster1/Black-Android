@@ -24,7 +24,7 @@ namespace kernel { uint8_t* g_base; }
 namespace app { bool opened = false; bool MenuOpen() { return opened; } void Save() {} }
 namespace host { bool Foreground() { return true; } void WindowPixels(int& w,int& h) { w=1280; h=720; } }
 namespace input { bool KeyboardActive() { return false; } }
-namespace touch { bool LookActive() { return true; } }
+namespace touch { bool LookActive() { return true; } void CancelGestures() {} void ModButtonAnchor(float& x,float& y,float& size) { x=742; y=50; size=40; } }
 namespace ui { void ReleasePointer() {} }
 namespace logx { void Write(Level, const char*, ...) {} }
 namespace game { Options& Opt() { static Options o; return o; } }
@@ -79,6 +79,17 @@ int main() {
     game::camera_adjust::Enable(false); Frame(); assert(!camera_tools::Visible());
     e.type=SDL_EVENT_FINGER_UP; assert(camera_tools::RouteEvent(e));  // Libera o gesto mesmo depois de ocultar o painel.
     e.type=SDL_EVENT_FINGER_MOTION; assert(!camera_tools::RouteEvent(e));
+
+    // Abre diretamente na missão: o modal não depende de uma página de pausa do jogo.
+    camera_tools::SetContext(true,false); camera_tools::OpenInMission(); Frame();
+    assert(camera_tools::FreezeRequested() && camera_tools::Modal() && camera_tools::Visible());
+    e.type=SDL_EVENT_FINGER_DOWN; e.tfinger.fingerID=77; e.tfinger.x=0.99f; e.tfinger.y=0.99f;
+    assert(camera_tools::RouteEvent(e));
+    e.type=SDL_EVENT_FINGER_UP; assert(camera_tools::RouteEvent(e));
+    camera_tools::Close(); Frame();
+    assert(!camera_tools::FreezeRequested() && !camera_tools::Modal());
+    camera_tools::SetContext(false,false); camera_tools::OpenInMission();
+    assert(!camera_tools::FreezeRequested());
 
     // O texto de diagnóstico aparece em jogo sem abrir um painel ou capturar gestos.
     game::Opt().esp_diagnostic_hud=true;

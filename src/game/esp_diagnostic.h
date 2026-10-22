@@ -6,7 +6,7 @@
 
 namespace game::esp_diagnostic {
 // Janela de quadros do jogo, congelada durante a pausa. Não representa o total da missão.
-struct Marker { Point position{}; uint32_t id = 0, age = 0; };
+struct Marker { Point position{}; uint32_t id = 0, age = 0; float health = 0; };
 enum class ListStatus { Waiting, Manager, Header, Shape, Table, Entity, Ready };
 inline const char* ListStatusText(ListStatus status) {
     switch (status) {

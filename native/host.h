@@ -36,6 +36,9 @@ bool OnEvent(const SDL_Event& e);
 void Apply(int port, input::Pad& pad);
 // inside the ImGui frame: the controls over the picture
 void Draw();
+// Limpa gestos ao abrir o menu de mods e localiza um botão ao lado da pausa.
+void CancelGestures();
+void ModButtonAnchor(float& x, float& y, float& size);
 // any touch on the screen in the last few seconds: the controls show
 bool Shown();
 // main thread, each turn of the event loop: what the input asks of the window (the on-screen keyboard)

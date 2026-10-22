@@ -53,6 +53,13 @@ int main() {
     assert(!Project({100,0,10}, camera,1280,720,x,y));
     assert(!Project({10,0,0}, camera,1280,720,x,y));
     assert(!Project({10,0,10}, camera,0,720,x,y));
+    float edge_x,edge_y;
+    assert(!OffscreenDirection({10,0,10},camera,1280,720,edge_x,edge_y));
+    assert(OffscreenDirection({100,0,10},camera,1280,720,edge_x,edge_y) && edge_x>1200);
+    assert(OffscreenDirection({-100,0,10},camera,1280,720,edge_x,edge_y) && edge_x<50);
+    assert(OffscreenDirection({10,0,-10},camera,1280,720,edge_x,edge_y) && edge_y>650);
+    assert(OffscreenDirection({15,0,-10},camera,1280,720,edge_x,edge_y) && edge_x>1200);
+    assert(!OffscreenDirection({10,0,10},camera,0,720,edge_x,edge_y));
     Box box;
     assert(ProjectBox({10,0,10},1.8f,camera,1280,720,box));
     assert(box.left<640 && box.right>640 && box.top<360 && std::abs(box.bottom-360)<0.01f);

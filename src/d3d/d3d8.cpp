@@ -9,6 +9,8 @@
 
 #include "app/app.h"
 #include "common/menu.h"
+#include "common/camera_tools.h"
+#include "audio/output.h"
 #include "common/options.h"
 #include "core/diag.h"
 #include "d3d/gpu_frame.h"
@@ -577,11 +579,22 @@ HLE_STDCALL(D3DDevice_Swap, 1) {
     kernel::SetSavedDataAddress(0);
     ApplyPendingGamma();
     if (g_backend) {
-        g_backend->Present(SurfaceOf(g_buffers[1]));
-        // the title records one frame while the GPU draws the one before it: a GPU bound frame rate then paces the
-        // game like a frame rate cap, and the frame times the game measures match the frames shown
-        if (g_backend_presents) gpu::WaitGpuFrame(g_backend_presents - 1);
-        g_backend_presents++;
+        bool mod_frozen = false;
+        // Reapresenta a mesma imagem e atualiza somente o ImGui. A thread principal
+        // do jogo permanece neste ponto, sem abrir a página de pausa do Xbox.
+        do {
+            if (camera_tools::FreezeRequested()) {
+                game::WaitWhileUnfocused();
+                audio::SetPaused(true);
+                mod_frozen = true;
+            }
+            g_backend->Present(SurfaceOf(g_buffers[1]));
+            // A imagem anterior precisa estar pronta antes de avançar a apresentação.
+            if (g_backend_presents) gpu::WaitGpuFrame(g_backend_presents - 1);
+            g_backend_presents++;
+            if (camera_tools::FreezeRequested()) app::PaceFrame();
+        } while (camera_tools::FreezeRequested());
+        if (mod_frozen) audio::SetPaused(false);
     }
     app::PaceFrame();
     RotateBuffers();

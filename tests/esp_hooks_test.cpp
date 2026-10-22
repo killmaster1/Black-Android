@@ -52,7 +52,7 @@ int main() {
     auto observations=state.Get().observations;
     EspCaptureProjection(ctx,nullptr);
     auto snapshot=state.Get();
-    assert(snapshot.live.valid && snapshot.live.count==1 && snapshot.live.points[0].position==position);
+    assert(snapshot.live.valid && snapshot.live.count==1 && snapshot.live.points[0].position==position && snapshot.live.points[0].health==100);
     assert(memory==scan_before);
     state.Tick(0x10000,150); EspCaptureProjection(ctx,nullptr);
     assert(state.Get().live.valid && state.Get().live.count==1 && state.Get().observations==observations);

@@ -42,4 +42,26 @@ inline bool ProjectBox(Point feet, float height, const Matrix& matrix, float wid
     return box.right > box.left;
 }
 
+// Direção na borda da imagem; mantém o lado correto mesmo para alvos atrás da câmera.
+inline bool OffscreenDirection(const Point& point, const Matrix& matrix, float width, float height, float& x, float& y) {
+    float sx,sy;
+    if (Project(point,matrix,width,height,sx,sy)) return false;
+    if (!Finite(point) || !std::isfinite(width) || !std::isfinite(height) || width<64 || height<64) return false;
+    for (int i=0;i<16;++i) if (i%4!=3 && !std::isfinite(matrix[i])) return false;
+    Point projected{};
+    for (int c=0;c<3;++c)
+        projected[c]=point[0]*matrix[c]+point[1]*matrix[4+c]+point[2]*matrix[8+c]+matrix[12+c];
+    if (!Finite(projected)) return false;
+    float dx=(projected[0]-0.5f*projected[2])*width;
+    float dy=(projected[1]-0.5f*projected[2])*height;
+    if (std::hypot(dx,dy)<0.001f) {
+        if (std::abs(projected[2])<0.001f) return false;
+        dy=1; // Diretamente atrás: indica a borda inferior.
+    }
+    const float rx=width*0.5f-24, ry=height*0.5f-24;
+    const float scale=1/std::max(std::abs(dx)/rx,std::abs(dy)/ry);
+    x=width*0.5f+dx*scale; y=height*0.5f+dy*scale;
+    return std::isfinite(x) && std::isfinite(y);
+}
+
 }

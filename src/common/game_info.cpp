@@ -113,6 +113,8 @@ const app::GameInfo app::kGame = {
                 {"esp_line", &game::Opt().esp_line, nullptr},
                 {"esp_box", &game::Opt().esp_box, nullptr},
                 {"esp_diagnostic_hud", &game::Opt().esp_diagnostic_hud, nullptr},
+                {"esp_health", &game::Opt().esp_health, nullptr},
+                {"esp_offscreen", &game::Opt().esp_offscreen, nullptr},
                 {"esp_box_height", nullptr, &game::Opt().esp_box_height},
                 {"infinite_ammo", &game::Opt().infinite_ammo, nullptr},
                 {"rapid_fire", nullptr, &game::Opt().rapid_fire},

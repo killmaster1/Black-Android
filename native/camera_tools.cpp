@@ -19,9 +19,12 @@
 
 namespace camera_tools {
 namespace {
+std::atomic<bool> g_direct{false};
 std::atomic<bool> g_mission{false}, g_paused{true}, g_cheats{false}, g_visible{false};
 // Desenho e eventos acessam estes dados sob app::UiLock.
-Rect g_bounds;
+Rect g_bounds, g_launcher_bounds;
+ImVec2 g_launcher_position{};
+float g_launcher_size=40;
 PanelInput g_input;
 bool g_minimized = false, g_right = false, g_snap_requested = false;
 int g_last_mode = -1;
@@ -45,20 +48,64 @@ void Save() {
     app::Save();
     g_notice = "Perfil salvo.";
 }
+void DrawLauncher() {
+    g_launcher_bounds = {};
+    if (!g_mission || g_paused || app::MenuOpen() || !host::Foreground()) return;
+    float x,y,size; touch::ModButtonAnchor(x,y,size);
+    g_launcher_position=ImVec2(x,y); g_launcher_size=size;
+    ImGui::SetNextWindowPos(ImVec2(x-size/2,y-size/2),ImGuiCond_Always);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2(0,0));
+    const auto flags=ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav;
+    if (ImGui::Begin("Mods###abrir_mods",nullptr,flags)) {
+        if (ImGui::Button("MOD",ImVec2(size,size))) {
+            if (FreezeRequested()) Close(); else OpenInMission();
+        }
+        auto a=ImGui::GetItemRectMin(), b=ImGui::GetItemRectMax();
+        g_launcher_bounds={a.x,a.y,b.x-a.x,b.y-a.y};
+    }
+    ImGui::End(); ImGui::PopStyleVar();
+}
 void DrawDiagnosticHud() {
     const auto diagnostic = game::esp_diagnostic::State().Get();
-    if (!diagnostic.enabled || !g_mission || g_paused || !touch::LookActive() ||
+    if (!diagnostic.enabled || !g_mission || g_paused || FreezeRequested() || !touch::LookActive() ||
         app::MenuOpen() || !host::Foreground()) return;
     const auto display = ImGui::GetIO().DisplaySize;
-    uint32_t drawn = 0;
-    if ((diagnostic.points_enabled || game::Opt().esp_line || game::Opt().esp_box) && diagnostic.camera_valid) {
+    uint32_t drawn = 0, offscreen = 0;
+    if ((diagnostic.points_enabled || game::Opt().esp_line || game::Opt().esp_box || game::Opt().esp_health || game::Opt().esp_offscreen) && diagnostic.camera_valid) {
         auto* draw = ImGui::GetForegroundDrawList();
         const auto& points = diagnostic.live.valid ? diagnostic.live.points : diagnostic.points;
         const auto count = diagnostic.live.valid ? diagnostic.live.count : diagnostic.point_count;
         for (uint32_t i = 0; i < count; ++i) {
             const auto& point = points[i];
             float x, y;
-            if (!game::esp_diagnostic::Project(point.position, diagnostic.camera, display.x, display.y, x, y)) continue;
+            bool on_screen=game::esp_diagnostic::Project(point.position, diagnostic.camera, display.x, display.y, x, y);
+            // Considera também tronco e cabeça estimados quando os pés saem da imagem.
+            if (!on_screen && diagnostic.live.valid) {
+                float height=float(std::clamp(game::Opt().esp_box_height,50u,350u))/100;
+                for (float share : {0.5f,1.0f}) {
+                    auto upper=point.position; upper[1]+=height*share;
+                    if (game::esp_diagnostic::Project(upper,diagnostic.camera,display.x,display.y,x,y)) {
+                        on_screen=true; break;
+                    }
+                }
+            }
+            if (!on_screen) {
+                if (diagnostic.live.valid && game::Opt().esp_offscreen &&
+                    game::esp_diagnostic::OffscreenDirection(point.position,diagnostic.camera,display.x,display.y,x,y)) {
+                    ++offscreen;
+                    ImVec2 edge(x,y), origin(display.x*0.5f,display.y*0.78f);
+                    const auto red=IM_COL32(255,55,55,230);
+                    draw->AddLine(origin,edge,red,1.5f);
+                    float dx=x-display.x*0.5f,dy=y-display.y*0.5f,length=std::hypot(dx,dy);
+                    if (length>0) {
+                        dx/=length;dy/=length;
+                        draw->AddTriangleFilled(edge,ImVec2(x-dx*13-dy*5,y-dy*13+dx*5),
+                            ImVec2(x-dx*13+dy*5,y-dy*13-dx*5),red);
+                    }
+                }
+                continue;
+            }
             ++drawn;
             // Amarelo: leitura recente. Laranja: última posição observada, que pode estar desatualizada.
             auto color = point.age <= 2 ? IM_COL32(255,235,40,255) : IM_COL32(255,145,40,180);
@@ -73,12 +120,28 @@ void DrawDiagnosticHud() {
                     draw->AddRect(ImVec2(box.left,box.top),ImVec2(box.right,box.bottom),IM_COL32(100,255,100,240),0,0,1.5f);
                 }
             }
+            if (diagnostic.live.valid && game::Opt().esp_health) {
+                char health[40]; std::snprintf(health,sizeof(health),"Vida: %.0f",point.health);
+                draw->AddText(ImVec2(x+7,y+8),IM_COL32(0,0,0,255),health);
+                draw->AddText(ImVec2(x+6,y+7),IM_COL32(255,255,255,255),health);
+            }
             if (!diagnostic.points_enabled) continue;
             draw->AddCircleFilled(center, 5, IM_COL32(0,0,0,220));
             draw->AddCircleFilled(center, 3, color);
             char label[24]; std::snprintf(label, sizeof(label), "%c%u", diagnostic.live.valid ? 'N' : 'C', point.id);
             draw->AddText(ImVec2(x+7,y-8), color, label);
         }
+    }
+    if (game::Opt().esp_offscreen) {
+        char counter[64];
+        if (diagnostic.live.valid && diagnostic.camera_valid)
+            std::snprintf(counter,sizeof(counter),"Fora da tela: %u",offscreen);
+        else std::snprintf(counter,sizeof(counter),"Fora da tela: --");
+        auto* draw=ImGui::GetForegroundDrawList();
+        auto text=ImGui::CalcTextSize(counter);
+        ImVec2 pos(g_launcher_position.x-text.x/2,g_launcher_position.y+g_launcher_size/2+6);
+        draw->AddRectFilled(ImVec2(pos.x-4,pos.y-2),ImVec2(pos.x+text.x+4,pos.y+text.y+2),IM_COL32(0,0,0,180),3);
+        draw->AddText(pos,IM_COL32(255,50,50,255),counter);
     }
     if (!game::Opt().esp_diagnostic_hud) return;
     // Abaixo da fileira superior de controles, próximo da pausa no layout padrão.
@@ -164,10 +227,12 @@ void DrawCheats() {
         bool enabled=game::esp_diagnostic::State().Enabled();
         if (ImGui::Checkbox("Ativar ESP",&enabled)) {
             game::esp_diagnostic::State().Enable(enabled);
-            if (!enabled) o.esp_line=o.esp_box=false;
+            if (!enabled) o.esp_line=o.esp_box=o.esp_health=o.esp_offscreen=false;
         }
         ImGui::Checkbox("ESP Linha",&o.esp_line);
         ImGui::Checkbox("ESP Caixa",&o.esp_box);
+        ImGui::Checkbox("Mostrar vida",&o.esp_health);
+        ImGui::Checkbox("Contador e direcoes fora da tela",&o.esp_offscreen);
         float height=float(std::clamp(o.esp_box_height,50u,350u))/100;
         Slider("Altura estimada da caixa",height,0.5f,3.5f);
         o.esp_box_height=uint32_t(std::lround(height*100));
@@ -175,7 +240,7 @@ void DrawCheats() {
         if (ImGui::Checkbox("Pontos dos personagens",&diagnostic.points_enabled))
             game::esp_diagnostic::State().ShowPoints(diagnostic.points_enabled);
         if (ImGui::Button("Desligar ESP",ImVec2(-1,36))) {
-            o.esp_line=o.esp_box=false;
+            o.esp_line=o.esp_box=o.esp_health=o.esp_offscreen=false;
             game::esp_diagnostic::State().Enable(false);
         }
         ImGui::TextWrapped("Pode incluir aliados. A caixa tem altura estimada; ajuste para a postura do personagem.");
@@ -185,7 +250,7 @@ void DrawCheats() {
         auto diagnostic=game::esp_diagnostic::State().Get();
         if (ImGui::Checkbox("Ativar leitura de NPCs",&diagnostic.enabled)) {
             game::esp_diagnostic::State().Enable(diagnostic.enabled);
-            if (!diagnostic.enabled) o.esp_line=o.esp_box=false;
+            if (!diagnostic.enabled) o.esp_line=o.esp_box=o.esp_health=o.esp_offscreen=false;
         }
         ImGui::Checkbox("Exibir contadores na missao",&game::Opt().esp_diagnostic_hud);
         ImGui::Text("NPCs vivos (teste): %u",diagnostic.live.count);
@@ -200,7 +265,7 @@ void DrawCheats() {
     ImGui::Spacing();
     if (ImGui::Button("Salvar perfil",ImVec2(sidebar,38))) Save();
     ImGui::SameLine();
-    if (ImGui::Button("Voltar a pausa",ImVec2(-1,38))) g_cheats=false;
+    if (ImGui::Button(g_direct ? "Continuar missao" : "Voltar a pausa",ImVec2(-1,38))) Close();
 }
 
 void DrawEditor() {
@@ -248,18 +313,33 @@ void DrawEditor() {
 }
 
 void SetContext(bool mission, bool paused) {
-    game::esp_diagnostic::State().SetPaused(paused);
+    game::esp_diagnostic::State().SetPaused(paused || g_direct);
     if (!mission) game::esp_diagnostic::State().Reset();
     g_mission = mission; g_paused = paused;
+    if (!mission) g_direct=false;
     if (!mission || !paused) g_cheats = false;
 }
 void OpenCheats() { g_cheats = true; }
+void OpenInMission() {
+    if (!g_mission || g_paused) return;
+    touch::CancelGestures();
+    g_direct=true;
+    game::esp_diagnostic::State().SetPaused(true);
+}
+void Close() {
+    bool direct=g_direct.exchange(false);
+    g_cheats=false;
+    if (direct) touch::CancelGestures();
+    game::esp_diagnostic::State().SetPaused(g_paused);
+}
+bool FreezeRequested() { return g_direct && g_mission; }
 bool Visible() { return g_visible.load(); }
-bool Modal() { return g_cheats && g_paused && g_mission; }
+bool Modal() { return g_mission && (g_direct || (g_cheats && g_paused)); }
 
 void Draw() {
-    if ((game::Opt().esp_line || game::Opt().esp_box) && !game::esp_diagnostic::State().Enabled())
+    if ((game::Opt().esp_line || game::Opt().esp_box || game::Opt().esp_health || game::Opt().esp_offscreen) && !game::esp_diagnostic::State().Enabled())
         game::esp_diagnostic::State().Enable(true);
+    DrawLauncher();
     DrawDiagnosticHud();
     g_bounds = {};
     bool cheats = Modal();
@@ -322,10 +402,10 @@ bool RouteEvent(const SDL_Event& e) {
     int w, h; host::WindowPixels(w, h);
     switch (e.type) {
         case SDL_EVENT_FINGER_DOWN:
-            return g_input.FingerDown(e.tfinger.fingerID, g_bounds.Contains(e.tfinger.x*w, e.tfinger.y*h));
-        case SDL_EVENT_FINGER_MOTION: return g_input.FingerMove(e.tfinger.fingerID);
+            return g_input.FingerDown(e.tfinger.fingerID, (Modal() || g_bounds.Contains(e.tfinger.x*w, e.tfinger.y*h) || g_launcher_bounds.Contains(e.tfinger.x*w,e.tfinger.y*h)));
+        case SDL_EVENT_FINGER_MOTION: return Modal() || g_input.FingerMove(e.tfinger.fingerID);
         case SDL_EVENT_FINGER_UP:
-        case SDL_EVENT_FINGER_CANCELED: return g_input.FingerUp(e.tfinger.fingerID);
+        case SDL_EVENT_FINGER_CANCELED: return g_input.FingerUp(e.tfinger.fingerID) || Modal();
         case SDL_EVENT_MOUSE_MOTION:
             if (e.motion.which == SDL_TOUCH_MOUSEID) return false;
             g_mouse_x = e.motion.x; g_mouse_y = e.motion.y;
@@ -333,14 +413,14 @@ bool RouteEvent(const SDL_Event& e) {
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
             if (e.button.which == SDL_TOUCH_MOUSEID) return false;
             g_mouse_x = e.button.x; g_mouse_y = e.button.y;
-            return g_input.MouseDown(e.button.button, g_bounds.Contains(g_mouse_x,g_mouse_y));
+            return g_input.MouseDown(e.button.button, (Modal() || g_bounds.Contains(g_mouse_x,g_mouse_y) || g_launcher_bounds.Contains(g_mouse_x,g_mouse_y)));
         case SDL_EVENT_MOUSE_BUTTON_UP:
             if (e.button.which == SDL_TOUCH_MOUSEID) return false;
             return g_input.MouseUp(e.button.button);
-        case SDL_EVENT_MOUSE_WHEEL: return g_bounds.Contains(g_mouse_x,g_mouse_y);
+        case SDL_EVENT_MOUSE_WHEEL: return (Modal() || g_bounds.Contains(g_mouse_x,g_mouse_y) || g_launcher_bounds.Contains(g_mouse_x,g_mouse_y));
         case SDL_EVENT_KEY_DOWN:
             if (Modal() && (e.key.scancode == SDL_SCANCODE_ESCAPE || e.key.scancode == SDL_SCANCODE_AC_BACK)) {
-                if (!e.key.repeat) g_cheats = false;
+                if (!e.key.repeat) Close();
                 return true;
             }
             return Modal();

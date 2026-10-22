@@ -1489,7 +1489,26 @@ void StepSize(int step) {
     SaveLayout();
 }
 
-// the controls over the screen to drag where they go, Done or Cancel in the bar at the top, Android's back cancels
+// Limpa os comandos pendentes ao abrir ou fechar o menu de mods.
+void CancelGestures() {
+    std::lock_guard lock(g_lock);
+    g_fingers.clear(); g_cursor_down = false;
+    input::g_dx=0; input::g_dy=0; input::g_touch_dx=0; input::g_touch_dy=0;
+    g_cursor_tap_until = 0; g_back_until = 0;
+    Recount();
+}
+void ModButtonAnchor(float& x, float& y, float& size) {
+    std::lock_guard lock(g_lock);
+    EnsureLayout();
+    for (size_t i=0;i<kButtonCount;++i) {
+        if (kButtons[i].press != kBit+4) continue;
+        size = std::clamp(Radius(i)*1.7f,32.0f,64.0f);
+        x = std::clamp(g_layout[i].x*Width()+Radius(i)+size*0.7f,size/2+4,Width()-size/2-4);
+        y = std::clamp(g_layout[i].y*Height(),size/2+4,Height()-size/2-4);
+        return;
+    }
+    size=40; x=Width()*0.58f; y=Height()*0.07f;
+}
 void EditLayout() {
     std::lock_guard lock(g_lock);
     EnsureLayout();
