@@ -13,6 +13,7 @@
 #include "game/ads_ak47.h"
 #include "game/camera_adjust.h"
 #include "game/free_camera.h"
+#include "game/esp_diagnostic.h"
 #include "host.h"
 
 namespace camera_tools {
@@ -52,6 +53,15 @@ void DrawCheats() {
     if (ImGui::Checkbox("Ajuste de camera", &adjust)) {
         game::camera_adjust::Enable(adjust);
         if (adjust && game::Opt().free_camera) game::free_camera::RequestToggle();
+    }
+    auto diagnostic = game::esp_diagnostic::State().Get();
+    if (ImGui::Checkbox("Diagnostico ESP", &diagnostic.enabled))
+        game::esp_diagnostic::State().Enable(diagnostic.enabled);
+    diagnostic = game::esp_diagnostic::State().Get();
+    if (diagnostic.enabled) {
+        ImGui::Text("Candidatos recentes: %u", diagnostic.candidates);
+        ImGui::Text("Deteccoes desde a ativacao: %u", diagnostic.observations);
+        ImGui::TextWrapped("Consulta da mira: nao e o total de inimigos. Retome a missao, mova e mire perto deles; pause para conferir. Candidatos expiram apos 120 quadros.");
     }
     ImGui::TextWrapped("Ative o ajuste e retome a missao para usar o painel lateral.");
     ImGui::Separator();
@@ -102,6 +112,7 @@ void DrawEditor() {
 }
 
 void SetContext(bool mission, bool paused) {
+    if (!mission) game::esp_diagnostic::State().Reset();
     g_mission = mission; g_paused = paused;
     if (!mission || !paused) g_cheats = false;
 }

@@ -580,3 +580,8 @@ call = "CameraBeforeSetup"
 [[hook]]
 at = 0x20348D
 call = "CameraAfterSetup"
+
+# Diagnóstico somente de leitura: candidato com IA reconhecido pela consulta de mira.
+[[hook]]
+at = 0x1BD3BD
+call = "EspObserveCandidate"
