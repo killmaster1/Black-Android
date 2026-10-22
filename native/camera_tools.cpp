@@ -79,6 +79,8 @@ void DrawDiagnosticHud() {
         ImGui::Text("Deteccoes da mira: %u", diagnostic.observations);
         if (diagnostic.live.valid) ImGui::Text("Fonte: lista de NPCs | Vivos (teste): %u", diagnostic.live.count);
         else ImGui::TextUnformatted("Fonte: consulta da mira (lista indisponivel)");
+        ImGui::Text("Lista v2: %s | Uso: %u/%u", game::esp_diagnostic::ListStatusText(diagnostic.live.status),
+                    diagnostic.live.used, diagnostic.live.capacity);
         if (diagnostic.points_enabled)
             ImGui::Text("Pontos na tela: %u | Camera: %s", drawn, diagnostic.camera_valid ? "OK" : "aguardando");
     }

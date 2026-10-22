@@ -7,7 +7,24 @@
 namespace game::esp_diagnostic {
 // Janela de quadros do jogo, congelada durante a pausa. Não representa o total da missão.
 struct Marker { Point position{}; uint32_t id = 0, age = 0; };
-struct Live { bool valid = false; uint32_t count = 0; std::array<Marker, 128> points{}; };
+enum class ListStatus { Waiting, Manager, Header, Shape, Table, Entity, Ready };
+inline const char* ListStatusText(ListStatus status) {
+    switch (status) {
+    case ListStatus::Manager: return "gerenciador indisponivel";
+    case ListStatus::Header: return "cabecalho ilegivel";
+    case ListStatus::Shape: return "limites invalidos";
+    case ListStatus::Table: return "vetor ilegivel";
+    case ListStatus::Entity: return "personagem ilegivel";
+    case ListStatus::Ready: return "OK";
+    default: return "aguardando";
+    }
+}
+struct Live {
+    bool valid = false;
+    uint32_t count = 0, capacity = 0, used = 0;
+    ListStatus status = ListStatus::Waiting;
+    std::array<Marker, 128> points{};
+};
 struct Snapshot {
     bool enabled = false, points_enabled = true, camera_valid = false;
     uint32_t candidates = 0, observations = 0, registered = 0, point_count = 0;

@@ -39,8 +39,13 @@ int main() {
     // A lista atualiza NPCs parados e em movimento sem uma nova consulta da mira.
     constexpr uint32_t manager=0x50000, table=0x60000, npc=0x70000;
     kernel::W32(0x2D1980,manager);
-    kernel::W32(manager+0x79B4,1); kernel::W32(manager+0x79B8,32); kernel::W32(manager+0x79BC,table);
-    kernel::W32(table,npc); kernel::W32(npc+0xC4,1); kernel::W32(npc+0x39C,0x80000);
+    // Estado inicial real do construtor: capacidade 16, ocupação zero.
+    kernel::W32(manager+0x79B4,16); kernel::W32(manager+0x79B8,0); kernel::W32(manager+0x79BC,table);
+    EspCaptureProjection(ctx,nullptr);
+    assert(state.Get().live.valid && state.Get().live.count==0);
+    // Um único NPC em um slot posterior: o vetor possui buracos.
+    kernel::W32(manager+0x79B8,1);
+    kernel::W32(table+15*4,npc); kernel::W32(npc+0xC4,1); kernel::W32(npc+0x39C,0x80000);
     float health=100; std::memcpy(memory.data()+npc+0x2F0,&health,4);
     std::memcpy(memory.data()+npc+0xA0,position.data(),sizeof(position));
     const auto scan_before=memory;
@@ -61,11 +66,11 @@ int main() {
     health=100; std::memcpy(memory.data()+npc+0x2F0,&health,4);
     kernel::W32(npc+0xC4,2); EspCaptureProjection(ctx,nullptr);
     assert(state.Get().live.count==0);
-    kernel::W32(manager+0x79B4,33); EspCaptureProjection(ctx,nullptr);
-    assert(!state.Get().live.valid);
-    kernel::W32(manager+0x79B4,1); kernel::W32(table,0xFFFFFFFC);
+    kernel::W32(manager+0x79B8,17); EspCaptureProjection(ctx,nullptr);
+    assert(!state.Get().live.valid && state.Get().live.status==game::esp_diagnostic::ListStatus::Shape);
+    kernel::W32(manager+0x79B8,1); kernel::W32(table+15*4,0xFFFFFFFC);
     EspCaptureProjection(ctx,nullptr); assert(!state.Get().live.valid);
-    kernel::W32(manager+0x79B4,0); EspCaptureProjection(ctx,nullptr);
+    kernel::W32(manager+0x79B8,0); kernel::W32(table+15*4,0); EspCaptureProjection(ctx,nullptr);
     assert(state.Get().live.valid && state.Get().live.count==0);
     state.Tick(0x10000,153); assert(!state.Get().live.valid);
     state.Reset(); state.Tick(0x10000,154);

@@ -91,8 +91,8 @@ na atualização da câmera, mantendo a consulta antiga apenas como alternativa 
 
 Referências conferidas no executável americano:
 
-- `0x1CDA30`: lê o gerenciador em `0x2D1980`, a contagem em `+0x79B4` e o vetor em `+0x79BC`.
-- `0x1E6860`: compara a contagem à capacidade em `+0x79B8`.
+- `0x1CDA30`: lê o gerenciador em `0x2D1980`, a capacidade em `+0x79B4` e o vetor em `+0x79BC`.
+- `0x1E6860`: compara a capacidade à ocupação em `+0x79B8`.
 - `0x1CDDE0`: identifica tipo de personagem `1` em `+0xC4` e consulta morte em `+0x384`.
 - Os hooks de dano já usam vida em `+0x2F0`; o candidato deve ter vida positiva, morte zero e IA em `+0x39C`.
 
@@ -112,3 +112,24 @@ Teste no aparelho: mantenha um NPC parado em vista por alguns segundos sem mover
 confira o marcador `N`, mova a câmera e depois elimine o NPC para verificar sua remoção.
 Envie uma captura incluindo a linha **Fonte**. O filtro de vida e a cobertura da lista
 precisam de validação no jogo real; aliados ainda podem ser incluídos.
+
+## Correção da interpretação do vetor (Lista v2)
+
+A primeira leitura contínua tinha capacidade e ocupação invertidas, e rejeitava
+listas válidas. Os testes anteriores também reproduziam essa hipótese incorreta.
+A inicialização real em `0x1E6BAB` escreve **16** em `+0x79B4` e **zero** em
+`+0x79B8`, depois zera os 16 slots apontados por `+0x79BC`.
+Assim, `+0x79B4` é a capacidade e `+0x79B8` é a ocupação.
+A comparação usada antes não permitia deduzir qual campo representava cada valor.
+
+A leitura corrigida percorre a capacidade, pulando slots nulos, como faz a consulta
+original. Um NPC pode ocupar um slot posterior mesmo com ocupação igual a um.
+Os testes agora incluem o estado inicial real e um NPC no último slot do vetor,
+além da atualização sem novas consultas de mira e da remoção por morte.
+
+O HUD mostra **Lista v2**, o estado da leitura e **Uso: ocupação/capacidade**.
+Se aparecer **Fonte: consulta da mira**, a linha seguinte identifica o motivo:
+gerenciador indisponível, cabeçalho ilegível, limites inválidos, vetor ilegível ou personagem ilegível.
+Quando a leitura funcionar, deve aparecer **Fonte: lista de NPCs** e **Lista v2: OK**.
+O teste no aparelho continua necessário; a correção dos campos não comprova a cobertura
+nem a classificação por equipe de todos os personagens.

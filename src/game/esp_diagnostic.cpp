@@ -16,22 +16,28 @@ bool Readable(uint32_t address, uint32_t size) {
         if (page == ((address + size - 1) & ~uint32_t(0xFFF))) return true;
     }
 }
-// 0x1CDA30 percorre manager+0x79BC, com contagem em +0x79B4.
-// 0x1E6860 compara essa contagem à capacidade em +0x79B8.
+// 0x1CDA30 percorre os slots de manager+0x79BC até a capacidade em +0x79B4.
+// 0x1E6BAB inicia capacidade=16 e ocupação=0 (+0x79B8), com slots nulos.
 // 0x1CDDE0 distingue personagem tipo 1 e consulta seu estado de morte em +0x384.
 game::esp_diagnostic::Live ReadLive() {
     game::esp_diagnostic::Live result;
     uint32_t manager = kernel::R32(0x2D1980);
-    if (!manager || manager > 0xFFFF863F || !Readable(manager + 0x79B4, 12)) return result;
-    uint32_t count = kernel::R32(manager + 0x79B4);
-    uint32_t capacity = kernel::R32(manager + 0x79B8);
+    if (!manager || manager > 0xFFFF863F) { result.status = game::esp_diagnostic::ListStatus::Manager; return result; }
+    if (!Readable(manager + 0x79B4, 12)) { result.status = game::esp_diagnostic::ListStatus::Header; return result; }
+    uint32_t capacity = result.capacity = kernel::R32(manager + 0x79B4);
+    uint32_t used = result.used = kernel::R32(manager + 0x79B8);
     uint32_t table = kernel::R32(manager + 0x79BC);
-    if (!capacity || count > capacity || capacity > result.points.size()) return result;
-    if (count && !Readable(table, count * 4)) return result;
-    for (uint32_t i = 0; i < count; ++i) {
+    if (!capacity || used > capacity || capacity > result.points.size()) {
+        result.status = game::esp_diagnostic::ListStatus::Shape; return result;
+    }
+    if (!Readable(table, capacity * 4)) { result.status = game::esp_diagnostic::ListStatus::Table; return result; }
+    // Há buracos no vetor; percorrer somente a ocupação pode perder os slots posteriores.
+    for (uint32_t i = 0; i < capacity; ++i) {
         uint32_t entity = kernel::R32(table + i*4);
         if (!entity) continue;
-        if (entity > 0xFFFFFC5F || !Readable(entity, 0x3A0)) return {};
+        if (entity > 0xFFFFFC5F || !Readable(entity, 0x3A0)) {
+            result.count = 0; result.status = game::esp_diagnostic::ListStatus::Entity; return result;
+        }
         if (kernel::R32(entity + 0xC4) != 1 || !kernel::R32(entity + 0x39C) ||
             kernel::R32(entity + 0x384)) continue;
         float health;
@@ -42,7 +48,7 @@ game::esp_diagnostic::Live ReadLive() {
         if (!game::esp_diagnostic::Finite(position)) continue;
         result.points[result.count++] = {position, i+1, 0};
     }
-    result.valid = true;
+    result.valid = true; result.status = game::esp_diagnostic::ListStatus::Ready;
     return result;
 }
 }
