@@ -14,6 +14,7 @@
 #include "core/log.h"
 #include "game/camera_adjust.h"
 #include "game/free_camera.h"
+#include "game/esp_diagnostic.h"
 #include "core/input.h"
 #include "game/layout.h"
 #include "xdk/hle.h"
@@ -75,6 +76,20 @@ int main() {
     game::camera_adjust::Enable(false); Frame(); assert(!camera_tools::Visible());
     e.type=SDL_EVENT_FINGER_UP; assert(camera_tools::RouteEvent(e));  // Libera o gesto mesmo depois de ocultar o painel.
     e.type=SDL_EVENT_FINGER_MOTION; assert(!camera_tools::RouteEvent(e));
+
+    // O texto de diagnóstico aparece em jogo sem abrir um painel ou capturar gestos.
+    game::esp_diagnostic::State().Enable(true);
+    camera_tools::SetContext(true,false); Frame();
+    auto* hud = ImGui::FindWindowByName("Diagnostico ESP###esp_diagnostic_hud");
+    assert(hud && hud->Active && (hud->Flags & ImGuiWindowFlags_NoInputs) == ImGuiWindowFlags_NoInputs);
+    assert(!camera_tools::Visible() && !camera_tools::Modal());
+    e.type=SDL_EVENT_FINGER_DOWN; e.tfinger.fingerID=99;
+    e.tfinger.x=(hud->Pos.x+10)/1280; e.tfinger.y=(hud->Pos.y+10)/720;
+    assert(!camera_tools::RouteEvent(e));
+    camera_tools::SetContext(true,true); Frame(); assert(!hud->Active);
+    camera_tools::SetContext(false,false); Frame(); assert(!hud->Active);
+    game::esp_diagnostic::State().Enable(false);
+    camera_tools::SetContext(true,false); Frame(); assert(!hud->Active);
 
     std::vector<uint8_t> memory(4*1024*1024); kernel::g_base=memory.data();
     constexpr uint32_t world=0x10000, player=world+layout::kWorldPlayer, manager=0x20000;

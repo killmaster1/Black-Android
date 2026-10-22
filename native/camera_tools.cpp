@@ -43,6 +43,23 @@ void Save() {
     app::Save();
     g_notice = "Perfil salvo.";
 }
+void DrawDiagnosticHud() {
+    const auto diagnostic = game::esp_diagnostic::State().Get();
+    if (!diagnostic.enabled || !g_mission || g_paused || !touch::LookActive() ||
+        app::MenuOpen() || !host::Foreground()) return;
+    const auto display = ImGui::GetIO().DisplaySize;
+    // Abaixo da fileira superior de controles, próximo da pausa no layout padrão.
+    ImGui::SetNextWindowPos(ImVec2(display.x * 0.527f, display.y * 0.15f), ImGuiCond_Always, ImVec2(0.5f, 0));
+    ImGui::SetNextWindowBgAlpha(0.72f);
+    const auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+    if (ImGui::Begin("Diagnostico ESP###esp_diagnostic_hud", nullptr, flags)) {
+        ImGui::SetWindowFontScale(1.35f);
+        ImGui::Text("ESP teste | Recentes: %u | Registrados: %u", diagnostic.candidates, diagnostic.registered);
+        ImGui::Text("Deteccoes: %u (inclui repeticoes)", diagnostic.observations);
+    }
+    ImGui::End();
+}
 void DrawCheats() {
     bool free = game::Opt().free_camera;
     if (ImGui::Checkbox("Camera livre", &free)) {
@@ -62,7 +79,7 @@ void DrawCheats() {
         ImGui::Text("Candidatos recentes: %u", diagnostic.candidates);
         ImGui::Text("Enderecos registrados (ate 128): %u", diagnostic.registered);
         ImGui::Text("Deteccoes desde a ativacao: %u", diagnostic.observations);
-        ImGui::TextWrapped("Consulta da mira: nao e o total de inimigos. Retome a missao, mova e mire perto deles; pause para conferir. Candidatos expiram apos 120 quadros.");
+        ImGui::TextWrapped("Consulta da mira: nao e o total de inimigos. Retome a missao: os contadores aparecem no topo da tela. Candidatos expiram apos 120 quadros.");
     }
     ImGui::TextWrapped("Ative o ajuste e retome a missao para usar o painel lateral.");
     ImGui::Separator();
@@ -123,6 +140,7 @@ bool Visible() { return g_visible.load(); }
 bool Modal() { return g_cheats && g_paused && g_mission; }
 
 void Draw() {
+    DrawDiagnosticHud();
     g_bounds = {};
     bool cheats = Modal();
     bool editor = g_mission && !g_paused && game::camera_adjust::Enabled() && touch::LookActive();

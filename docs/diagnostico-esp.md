@@ -9,7 +9,7 @@ Aliados também podem aparecer; a classificação por equipe e a identificação
 1. Entre em uma missão, pause e abra **Cheats**.
 2. Ative **Diagnostico ESP** e retome a missão.
 3. Movimente-se e olhe na direção de inimigos próximos. A consulta original depende das entradas de movimento/mira e tem alcance limitado.
-4. Pause e abra **Cheats** novamente. Envie uma captura dos valores **Candidatos recentes** e **Deteccoes desde a ativacao**.
+4. Observe os contadores em tempo real no topo da tela, abaixo da fileira de controles perto da pausa no layout padrão. Envie uma captura com inimigos à vista. Os valores também continuam disponíveis em **Cheats**.
 5. Repita após eliminar um inimigo ou olhar para uma área vazia por alguns segundos.
 
 O conjunto mantém até 128 endereços distintos, com validade de 120 quadros do jogo.
@@ -45,3 +45,7 @@ Agora o contexto da pausa suspende explicitamente o relógio do diagnóstico.
 A interface também mostra quantos endereços estão registrados no conjunto limitado a 128,
 mesmo quando já expiraram. Esse número pode incluir endereços reutilizados e personagens
 que morreram; não é uma contagem de inimigos vivos nem um total único da missão.
+
+O texto durante a missão não recebe toques nem abre o cursor. Ele aparece enquanto
+**Diagnostico ESP** estiver ligado e desaparece durante a pausa, fora da missão ou
+ao desligar a opção. A posição é fixa e não acompanha personalizações do botão de pausa.
