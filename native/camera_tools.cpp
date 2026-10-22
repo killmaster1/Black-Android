@@ -52,8 +52,10 @@ void DrawDiagnosticHud() {
     uint32_t drawn = 0;
     if (diagnostic.points_enabled && diagnostic.camera_valid) {
         auto* draw = ImGui::GetForegroundDrawList();
-        for (uint32_t i = 0; i < diagnostic.point_count; ++i) {
-            const auto& point = diagnostic.points[i];
+        const auto& points = diagnostic.live.valid ? diagnostic.live.points : diagnostic.points;
+        const auto count = diagnostic.live.valid ? diagnostic.live.count : diagnostic.point_count;
+        for (uint32_t i = 0; i < count; ++i) {
+            const auto& point = points[i];
             float x, y;
             if (!game::esp_diagnostic::Project(point.position, diagnostic.camera, display.x, display.y, x, y)) continue;
             ++drawn;
@@ -62,7 +64,7 @@ void DrawDiagnosticHud() {
             ImVec2 center(x,y);
             draw->AddCircleFilled(center, 5, IM_COL32(0,0,0,220));
             draw->AddCircleFilled(center, 3, color);
-            char label[24]; std::snprintf(label, sizeof(label), "C%u", point.id);
+            char label[24]; std::snprintf(label, sizeof(label), "%c%u", diagnostic.live.valid ? 'N' : 'C', point.id);
             draw->AddText(ImVec2(x+7,y-8), color, label);
         }
     }
@@ -74,7 +76,9 @@ void DrawDiagnosticHud() {
     if (ImGui::Begin("Diagnostico ESP###esp_diagnostic_hud", nullptr, flags)) {
         ImGui::SetWindowFontScale(1.35f);
         ImGui::Text("ESP teste | Recentes: %u | Registrados: %u", diagnostic.candidates, diagnostic.registered);
-        ImGui::Text("Deteccoes: %u (inclui repeticoes)", diagnostic.observations);
+        ImGui::Text("Deteccoes da mira: %u", diagnostic.observations);
+        if (diagnostic.live.valid) ImGui::Text("Fonte: lista de NPCs | Vivos (teste): %u", diagnostic.live.count);
+        else ImGui::TextUnformatted("Fonte: consulta da mira (lista indisponivel)");
         if (diagnostic.points_enabled)
             ImGui::Text("Pontos na tela: %u | Camera: %s", drawn, diagnostic.camera_valid ? "OK" : "aguardando");
     }
@@ -98,7 +102,9 @@ void DrawCheats() {
     if (diagnostic.enabled) {
         if (ImGui::Checkbox("Pontos de teste", &diagnostic.points_enabled))
             game::esp_diagnostic::State().ShowPoints(diagnostic.points_enabled);
-        ImGui::Text("Candidatos recentes: %u", diagnostic.candidates);
+        if (diagnostic.live.valid) ImGui::Text("NPCs vivos na lista (teste): %u", diagnostic.live.count);
+        else ImGui::TextUnformatted("Lista de NPCs indisponivel: usando consulta da mira.");
+        ImGui::Text("Candidatos recentes da mira: %u", diagnostic.candidates);
         ImGui::Text("Enderecos registrados (ate 128): %u", diagnostic.registered);
         ImGui::Text("Deteccoes desde a ativacao: %u", diagnostic.observations);
         ImGui::TextWrapped("Consulta da mira: nao e o total de inimigos. Retome a missao: os contadores aparecem no topo da tela. Candidatos expiram apos 120 quadros.");

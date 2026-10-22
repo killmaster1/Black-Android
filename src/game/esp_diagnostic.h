@@ -7,10 +7,12 @@
 namespace game::esp_diagnostic {
 // Janela de quadros do jogo, congelada durante a pausa. Não representa o total da missão.
 struct Marker { Point position{}; uint32_t id = 0, age = 0; };
+struct Live { bool valid = false; uint32_t count = 0; std::array<Marker, 128> points{}; };
 struct Snapshot {
     bool enabled = false, points_enabled = true, camera_valid = false;
     uint32_t candidates = 0, observations = 0, registered = 0, point_count = 0;
     Matrix camera{};
+    Live live{};
     std::array<Marker, 128> points{};
 };
 class Diagnostic {
@@ -19,9 +21,10 @@ class Diagnostic {
     std::array<Entry, 128> entries{};
     bool enabled = false, paused = false, points_enabled = true, camera_valid = false;
     Matrix camera{};
-    uint32_t camera_frame = 0;
+    uint32_t camera_frame = 0, live_frame = 0;
+    Live live{};
     uint32_t world = 0, frame = 0, raw_frame = 0, observations = 0;
-    void Clear() { entries = {}; observations = 0; camera_valid = false; }
+    void Clear() { entries = {}; observations = 0; camera_valid = false; live = {}; }
 public:
     void Enable(bool value) { std::lock_guard guard(lock); enabled = value; Clear(); }
     void Reset() { std::lock_guard guard(lock); Clear(); world = 0; }
@@ -34,6 +37,11 @@ public:
             frame += current_frame - raw_frame;
         }
         world = current_world; raw_frame = current_frame;
+    }
+    void PublishLive(const Live& value) {
+        std::lock_guard guard(lock);
+        if (!enabled || !world) return;
+        live = value; live_frame = frame;
     }
     bool Enabled() { std::lock_guard guard(lock); return enabled; }
     void ShowPoints(bool value) { std::lock_guard guard(lock); points_enabled = value; }
@@ -65,6 +73,8 @@ public:
         Snapshot result;
         result.enabled = enabled; result.points_enabled = points_enabled;
         result.observations = observations; result.camera = camera;
+        result.live = live;
+        if (frame - live_frame > 2) result.live = {};
         result.camera_valid = camera_valid && frame - camera_frame <= 2;
         for (const auto& entry : entries) {
             if (!entry.address) continue;

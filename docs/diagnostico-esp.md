@@ -62,7 +62,7 @@ Amarelo indica uma amostra de até dois quadros. Laranja indica uma posição ma
 que pode ficar parada até expirar em 120 quadros. O ponto não acompanha automaticamente
 um candidato que saiu da consulta, e pode permanecer brevemente após sua morte.
 O identificador representa uma posição no conjunto do diagnóstico e pode ser reutilizado.
-Não há classificação por equipe, vida ou visibilidade através de paredes nesta etapa.
+Ainda não há classificação por equipe nem teste de oclusão nesta etapa. A atualização pela lista aplica um filtro experimental de vida descrito abaixo.
 A opção **Pontos de teste** permite ocultar os marcadores mantendo os contadores.
 O HUD informa **Pontos na tela** e se a matriz de câmera está disponível.
 
@@ -82,3 +82,33 @@ Posições não finitas, pontos atrás da câmera e pontos fora da imagem são d
 ```sh
 bash tools/test_esp.sh out/check-deps/sdk
 ```
+
+## Atualização contínua pela lista de personagens
+
+O primeiro teste visual confirmou pontos próximos à base dos NPCs, mas as amostras
+ficavam laranja ao parar a consulta de mira. A versão seguinte lê a lista de personagens
+na atualização da câmera, mantendo a consulta antiga apenas como alternativa de diagnóstico.
+
+Referências conferidas no executável americano:
+
+- `0x1CDA30`: lê o gerenciador em `0x2D1980`, a contagem em `+0x79B4` e o vetor em `+0x79BC`.
+- `0x1E6860`: compara a contagem à capacidade em `+0x79B8`.
+- `0x1CDDE0`: identifica tipo de personagem `1` em `+0xC4` e consulta morte em `+0x384`.
+- Os hooks de dano já usam vida em `+0x2F0`; o candidato deve ter vida positiva, morte zero e IA em `+0x39C`.
+
+A leitura limita a capacidade a 128 e verifica os intervalos antes de ler o vetor e os objetos.
+Somente os endereços da lista atual são lidos; não se percorrem os endereços guardados pela consulta antiga.
+Os pontos da lista são substituídos a cada captura e não ficam guardados por 120 quadros.
+A validade também vence se a captura deixar de atualizar. Nenhum dado do jogo é escrito.
+
+O HUD mostra **Fonte: lista de NPCs** e **Vivos (teste)** quando a estrutura é válida.
+Esses marcadores têm prefixo `N` e devem permanecer amarelos com o NPC parado,
+mesmo sem mover a mira. Os números seguem as posições do vetor e podem mudar ao remover personagens.
+Se a estrutura estiver indisponível, aparece **Fonte: consulta da mira** e os pontos
+`C` antigos mantêm a distinção amarelo/laranja e sua expiração de 120 quadros.
+Os contadores **Recentes/Registrados/Deteccoes da mira** continuam exclusivos da consulta antiga.
+
+Teste no aparelho: mantenha um NPC parado em vista por alguns segundos sem mover a mira;
+confira o marcador `N`, mova a câmera e depois elimine o NPC para verificar sua remoção.
+Envie uma captura incluindo a linha **Fonte**. O filtro de vida e a cobertura da lista
+precisam de validação no jogo real; aliados ainda podem ser incluídos.
