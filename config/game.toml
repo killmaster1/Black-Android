@@ -590,3 +590,16 @@ call = "EspObserveCandidate"
 [[hook]]
 at = 0x20359F
 call = "EspCaptureProjection"
+
+# Observa a criação natural de NPCs; não chama fábricas nem escreve no jogo.
+[[hook]]
+at = 0x1AF880
+call = "NpcCreationBegin"
+
+[[hook]]
+at = 0x1AF8A4
+call = "NpcCreationEnd"
+
+[[hook]]
+at = 0x1AF99D
+call = "NpcCreationEnd"

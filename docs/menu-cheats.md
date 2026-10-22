@@ -17,6 +17,7 @@ Ao entrar pelo caminho antigo, o botão **Voltar a pausa** mantém o comportamen
 | Câmera | Câmera livre/noclip, velocidade do voo, ajuste de câmera e ocultar HUD |
 | ESP | Ativar leitura, linhas, caixas, vida, contador e direções fora da tela, altura estimada, pontos e desligar ESP |
 | Diagnóstico | Ativar leitura de NPCs, exibir contadores na missão e conferir a lista |
+| NPCs | Observar criações naturais e conferir os perfis usados pela missão; criação manual ainda em estudo |
 
 Os cheats da página original de opções usam os mesmos valores deste painel.
 Salvar perfil registra os cheats persistentes, o perfil de câmera e as opções de linha,
@@ -85,3 +86,5 @@ Os testes locais verificam o modal independente da pausa, os toques, as direçõ
 para pontos fora da imagem e atrás da câmera e a cópia do valor da vida.
 A apresentação repetida, a retomada do áudio e o ciclo de foco precisam ser
 verificados no aparelho com o APK completo.
+
+A investigação de spawn está documentada no [guia de criação de NPCs](criacao-npcs.md).

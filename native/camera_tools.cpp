@@ -15,6 +15,7 @@
 #include "game/camera_adjust.h"
 #include "game/free_camera.h"
 #include "game/esp_diagnostic.h"
+#include "game/npc_creation.h"
 #include "host.h"
 
 namespace camera_tools {
@@ -181,11 +182,11 @@ void CameraSwitches() {
     }
 }
 void DrawCheats() {
-    static constexpr const char* categories[] = {"Jogador", "Armas", "Jogo", "Camera", "ESP", "Diagnostico"};
+    static constexpr const char* categories[] = {"Jogador", "Armas", "Jogo", "Camera", "ESP", "Diagnostico", "NPCs"};
     float sidebar = std::clamp(ImGui::GetContentRegionAvail().x*0.26f,130.0f,180.0f);
     float height = std::max(90.0f, ImGui::GetContentRegionAvail().y-60);
     ImGui::BeginChild("categorias",ImVec2(sidebar,height),true);
-    for (int i=0;i<6;++i)
+    for (int i=0;i<7;++i)
         if (ImGui::Selectable(categories[i],g_category==i,0,ImVec2(0,36))) g_category=i;
     ImGui::EndChild();
     ImGui::SameLine();
@@ -259,6 +260,23 @@ void DrawCheats() {
         ImGui::Text("Deteccoes da mira: %u",diagnostic.observations);
         break;
     }
+    }
+    if (g_category==6) {
+        auto capture=game::npc_creation::State().Get();
+        if (ImGui::Checkbox("Observar criacoes naturais",&capture.enabled))
+            game::npc_creation::State().Enable(capture.enabled);
+        ImGui::Text("Chamadas observadas: %u",capture.attempts);
+        ImGui::Text("NPCs criados e reconhecidos: %u",capture.created);
+        ImGui::Text("Retornos sem NPC: %u",capture.empty);
+        ImGui::Text("Leituras incompletas: %u",capture.unreadable);
+        ImGui::Text("Perfis observados: %u",capture.profiles);
+        if (capture.has_last) {
+            ImGui::Text("Ultimo perfil: %u",capture.last_profile);
+            ImGui::Text("Configuracao: %s",capture.last_resource_readable ? "lida" : "indisponivel");
+            ImGui::Text("Transformacao: %s",capture.last_transform_readable ? "lida" : "indisponivel");
+        }
+        if (ImGui::Button("Zerar contadores",ImVec2(-1,36))) game::npc_creation::State().Reset();
+        ImGui::TextWrapped("Criacao manual em estudo. Avance na missao e confira este painel quando aparecerem novos NPCs.");
     }
     if (*g_notice) ImGui::TextWrapped("%s",g_notice);
     ImGui::EndChild();
