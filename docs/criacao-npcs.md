@@ -1,8 +1,8 @@
 # Investigação da criação de NPCs
 
-O menu **MOD → NPCs** observa as criações naturais da missão. A observação começa
-ligada no aplicativo e copia apenas valores de diagnóstico. Esta versão não cria
-NPCs pelo menu e não permite escolher aliado ou inimigo.
+O menu **MOD → NPCs** observa as criações da missão e inclui um primeiro teste
+de duplicação da próxima criação natural. Ainda não há spawn instantâneo nem escolha
+de aliado ou inimigo. O monitor começa ligado e também conta a criação extra quando ela usa a fábrica observada.
 
 ## Teste no aparelho
 
@@ -73,7 +73,7 @@ Reiniciar a coleta, desativá-la ou mudar de mundo invalida chamadas pendentes a
 - Confirmar posição válida, colisão, navegação e definição de aliado/inimigo.
 
 Copiar uma estrutura de NPC ou repetir uma chamada com ponteiros de uma pilha antiga
-não resolve essas etapas. O botão de criação manual depende desse mapeamento.
+não resolve essas etapas. A criação instantânea de um perfil escolhido depende desse mapeamento.
 
 ## Validação local
 
@@ -85,3 +85,51 @@ bash tools/test_camera_tools.sh out/check-deps/sdk
 Os testes simulam entrada e retorno, confirmam ausência de escrita em memória e
 registradores, pareamento de chamadas aninhadas, retorno nulo, limites de perfil,
 reinício dos contadores e troca de mundo. Não substituem o teste da fábrica real no aparelho.
+
+## Primeiro protótipo: duplicar a próxima criação natural
+
+As capturas do usuário confirmaram 6, 12 e 67 chamadas reconhecidas, com zero leituras
+incompletas, até cinco perfis e leitura da configuração/transformação nessa missão.
+
+1. Abra **MOD → NPCs** e toque em **Duplicar proximo NPC (teste)** uma vez.
+2. Confira **Aguardando uma criacao natural** e toque em **Continuar missao**.
+3. Avance até o jogo criar outro NPC. Um extra é solicitado no mesmo ponto, com o perfil original.
+4. Confira **NPC extra criado** e **Extras confirmados: 1** no painel; use ESP para localizar os dois.
+5. Teste se o extra se move, usa a arma e pode morrer. Envie uma captura do resultado.
+
+O botão não cria imediatamente ao lado do jogador. Se o trecho não gerar mais NPCs,
+a solicitação permanece aguardando. **Cancelar duplicacao** cancela uma solicitação pendente.
+Cada acionamento autoriza no máximo uma tentativa extra; não há repetição automática.
+O estado é limpo ao mudar o endereço do mundo. A escolha de equipe ainda não existe:
+o extra herda os parâmetros da criação original. O mesmo ponto de nascimento pode
+causar sobreposição inicial; posição alternativa e integração com objetivos ainda precisam de teste.
+
+### Chamada completa e duração dos parâmetros
+
+A função `0x1B2640` recebe a definição em ESI e 11 argumentos na pilha (`ret 0x2C`).
+Ela verifica disponibilidade em `0x1E6860`, chama `0x1AF880` e executa o restante da
+configuração até `0x1B2746`. Seus retornos antecipados ficam em `0x1B2657` e `0x1B26AD`.
+Os quatro pontos foram conferidos no executável americano fornecido.
+
+Os argumentos só são copiados enquanto essa chamada está ativa. Depois de uma criação
+original reconhecida, antes do retorno ao chamador, a rotina completa é chamada mais
+uma vez com os mesmos argumentos e definição, preservando o contexto original em uma cópia.
+Isso inclui o contador usado pelo código original, sem criar um identificador arbitrário.
+Não há cache de ponteiros para chamar a fábrica mais tarde pelo ImGui.
+Ainda é necessário validar no aparelho o comportamento desses recursos compartilhados após a criação.
+
+A rotina é chamada pela própria thread que está criando o personagem; a interface apenas
+arma a solicitação. Há proteção contra reentrada, mudança de mundo, cancelamento e
+falta de espaço. O protótipo exige uma vaga existente e uma reserva de IA não vazia;
+a verificação original de disponibilidade também continua sendo executada.
+A tentativa deixa a imagem e os registradores de retorno da criação original intactos;
+a única alteração intencional é o trabalho feito pela rotina original para criar o extra.
+
+```sh
+bash tools/test_npc_spawn.sh out/check-deps/sdk
+```
+
+O teste usa uma chamada convidada simulada para verificar argumentos, uma única tentativa,
+reentrada, contexto preservado, criação não confirmada, cancelamento, reservas cheias e
+mudança de mundo. O teste não executa a rotina real do jogo; comportamento e estabilidade
+do NPC extra precisam ser avaliados no APK.

@@ -16,6 +16,7 @@
 #include "game/free_camera.h"
 #include "game/esp_diagnostic.h"
 #include "game/npc_creation.h"
+#include "game/npc_spawn.h"
 #include "host.h"
 
 namespace camera_tools {
@@ -262,6 +263,14 @@ void DrawCheats() {
     }
     }
     if (g_category==6) {
+        ImGui::Separator();
+        auto spawn=game::npc_spawn::State().Get();
+        if (ImGui::Button("Duplicar proximo NPC (teste)",ImVec2(-1,36))) game::npc_spawn::State().Arm();
+        if (ImGui::Button("Cancelar duplicacao",ImVec2(-1,36))) game::npc_spawn::State().Cancel();
+        ImGui::TextWrapped("%s",game::npc_spawn::Text(spawn.status));
+        ImGui::Text("Extras confirmados: %u",spawn.created);
+        ImGui::TextWrapped("Retome e avance ate nascer outro NPC. Um extra herda o perfil e o ponto de nascimento. Aliado/inimigo ainda nao pode ser escolhido.");
+        ImGui::Separator();
         auto capture=game::npc_creation::State().Get();
         if (ImGui::Checkbox("Observar criacoes naturais",&capture.enabled))
             game::npc_creation::State().Enable(capture.enabled);
@@ -276,7 +285,7 @@ void DrawCheats() {
             ImGui::Text("Transformacao: %s",capture.last_transform_readable ? "lida" : "indisponivel");
         }
         if (ImGui::Button("Zerar contadores",ImVec2(-1,36))) game::npc_creation::State().Reset();
-        ImGui::TextWrapped("Criacao manual em estudo. Avance na missao e confira este painel quando aparecerem novos NPCs.");
+
     }
     if (*g_notice) ImGui::TextWrapped("%s",g_notice);
     ImGui::EndChild();

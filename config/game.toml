@@ -603,3 +603,20 @@ call = "NpcCreationEnd"
 [[hook]]
 at = 0x1AF99D
 call = "NpcCreationEnd"
+
+# Duplica uma criação completa com parâmetros ainda válidos; uma solicitação por NPC extra.
+[[hook]]
+at = 0x1B2640
+call = "NpcSpawnBegin"
+
+[[hook]]
+at = 0x1B2657
+call = "NpcSpawnEnd"
+
+[[hook]]
+at = 0x1B26AD
+call = "NpcSpawnEnd"
+
+[[hook]]
+at = 0x1B2746
+call = "NpcSpawnEnd"

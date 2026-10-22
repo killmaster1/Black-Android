@@ -17,7 +17,7 @@ Ao entrar pelo caminho antigo, o botão **Voltar a pausa** mantém o comportamen
 | Câmera | Câmera livre/noclip, velocidade do voo, ajuste de câmera e ocultar HUD |
 | ESP | Ativar leitura, linhas, caixas, vida, contador e direções fora da tela, altura estimada, pontos e desligar ESP |
 | Diagnóstico | Ativar leitura de NPCs, exibir contadores na missão e conferir a lista |
-| NPCs | Observar criações naturais e conferir os perfis usados pela missão; criação manual ainda em estudo |
+| NPCs | Observar perfis e duplicar uma próxima criação natural (teste) |
 
 Os cheats da página original de opções usam os mesmos valores deste painel.
 Salvar perfil registra os cheats persistentes, o perfil de câmera e as opções de linha,
