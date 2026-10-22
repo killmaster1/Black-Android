@@ -9,6 +9,18 @@ int main() {
     state.Enable(true);
     state.Observe(100); state.Observe(100); state.Observe(200);
     assert(state.Get().candidates == 2 && state.Get().observations == 3);
+    state.SetPaused(true);
+    state.Tick(1, 1000);
+    assert(state.Get().candidates == 2 && state.Get().registered == 2);
+    state.Tick(1, 2000);
+    assert(state.Get().candidates == 2);
+    state.SetPaused(false);
+    state.Tick(1, 2120);
+    assert(state.Get().candidates == 2);
+    state.Tick(1, 2121);
+    assert(state.Get().candidates == 0 && state.Get().registered == 2);
+    state.Tick(1, 10);
+    state.Observe(100); state.Observe(200);
     state.Tick(1, 130);
     assert(state.Get().candidates == 2);
     state.Tick(1, 131);

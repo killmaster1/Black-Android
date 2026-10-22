@@ -60,6 +60,7 @@ void DrawCheats() {
     diagnostic = game::esp_diagnostic::State().Get();
     if (diagnostic.enabled) {
         ImGui::Text("Candidatos recentes: %u", diagnostic.candidates);
+        ImGui::Text("Enderecos registrados (ate 128): %u", diagnostic.registered);
         ImGui::Text("Deteccoes desde a ativacao: %u", diagnostic.observations);
         ImGui::TextWrapped("Consulta da mira: nao e o total de inimigos. Retome a missao, mova e mire perto deles; pause para conferir. Candidatos expiram apos 120 quadros.");
     }
@@ -112,6 +113,7 @@ void DrawEditor() {
 }
 
 void SetContext(bool mission, bool paused) {
+    game::esp_diagnostic::State().SetPaused(paused);
     if (!mission) game::esp_diagnostic::State().Reset();
     g_mission = mission; g_paused = paused;
     if (!mission || !paused) g_cheats = false;

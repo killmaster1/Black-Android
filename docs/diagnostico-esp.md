@@ -36,3 +36,12 @@ Validação local do contador:
 c++ -std=c++20 -pthread -Isrc tests/esp_diagnostic_test.cpp -o /tmp/esp_diagnostic_test
 /tmp/esp_diagnostic_test
 ```
+
+## Correção após o primeiro teste no celular
+
+As capturas confirmaram chamadas da consulta, mas mostraram zero candidatos recentes.
+O contador de quadros usado pela renderização não garantia a suspensão da expiração no menu.
+Agora o contexto da pausa suspende explicitamente o relógio do diagnóstico.
+A interface também mostra quantos endereços estão registrados no conjunto limitado a 128,
+mesmo quando já expiraram. Esse número pode incluir endereços reutilizados e personagens
+que morreram; não é uma contagem de inimigos vivos nem um total único da missão.
