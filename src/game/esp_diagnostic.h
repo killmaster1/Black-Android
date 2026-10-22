@@ -2,17 +2,26 @@
 #include <array>
 #include <cstdint>
 #include <mutex>
+#include "game/esp_projection.h"
 
 namespace game::esp_diagnostic {
 // Janela de quadros do jogo, congelada durante a pausa. Não representa o total da missão.
-struct Snapshot { bool enabled = false; uint32_t candidates = 0, observations = 0, registered = 0; };
+struct Marker { Point position{}; uint32_t id = 0, age = 0; };
+struct Snapshot {
+    bool enabled = false, points_enabled = true, camera_valid = false;
+    uint32_t candidates = 0, observations = 0, registered = 0, point_count = 0;
+    Matrix camera{};
+    std::array<Marker, 128> points{};
+};
 class Diagnostic {
-    struct Entry { uint32_t address = 0, frame = 0; };
+    struct Entry { uint32_t address = 0, frame = 0; Point position{}; bool positioned = false; };
     std::mutex lock;
     std::array<Entry, 128> entries{};
-    bool enabled = false, paused = false;
+    bool enabled = false, paused = false, points_enabled = true, camera_valid = false;
+    Matrix camera{};
+    uint32_t camera_frame = 0;
     uint32_t world = 0, frame = 0, raw_frame = 0, observations = 0;
-    void Clear() { entries = {}; observations = 0; }
+    void Clear() { entries = {}; observations = 0; camera_valid = false; }
 public:
     void Enable(bool value) { std::lock_guard guard(lock); enabled = value; Clear(); }
     void Reset() { std::lock_guard guard(lock); Clear(); world = 0; }
@@ -26,24 +35,45 @@ public:
         }
         world = current_world; raw_frame = current_frame;
     }
-    void Observe(uint32_t address) {
+    bool Enabled() { std::lock_guard guard(lock); return enabled; }
+    void ShowPoints(bool value) { std::lock_guard guard(lock); points_enabled = value; }
+    void Camera(const Matrix& value) {
+        std::lock_guard guard(lock);
+        if (!enabled || !world) return;
+        camera_valid = true;
+        for (int i = 0; i < 16; ++i)
+            if (i % 4 != 3 && !std::isfinite(value[i])) camera_valid = false;
+        camera = value; camera_frame = frame;
+    }
+    void Observe(uint32_t address, const Point* position = nullptr) {
         std::lock_guard guard(lock);
         if (!enabled || !world || !address) return;
         ++observations;
+        auto update = [&](Entry& entry) {
+            entry = {address, frame, {}, position && Finite(*position)};
+            if (entry.positioned) entry.position = *position;
+        };
         Entry* replacement = &entries[0];
         for (auto& entry : entries) {
-            if (entry.address == address) { entry.frame = frame; return; }
+            if (entry.address == address) { update(entry); return; }
             if (!entry.address || frame - entry.frame > frame - replacement->frame) replacement = &entry;
         }
-        *replacement = {address, frame};
+        update(*replacement);
     }
     Snapshot Get() {
         std::lock_guard guard(lock);
-        Snapshot result{enabled, 0, observations};
+        Snapshot result;
+        result.enabled = enabled; result.points_enabled = points_enabled;
+        result.observations = observations; result.camera = camera;
+        result.camera_valid = camera_valid && frame - camera_frame <= 2;
         for (const auto& entry : entries) {
             if (!entry.address) continue;
             ++result.registered;
-            if (frame - entry.frame <= 120) ++result.candidates;
+            if (frame - entry.frame <= 120) {
+                ++result.candidates;
+                if (entry.positioned)
+                    result.points[result.point_count++] = {entry.position, uint32_t(&entry - entries.data())+1, frame-entry.frame};
+            }
         }
         return result;
     }

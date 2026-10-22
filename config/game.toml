@@ -585,3 +585,8 @@ call = "CameraAfterSetup"
 [[hook]]
 at = 0x1BD3BD
 call = "EspObserveCandidate"
+
+# Matriz normalizada de mundo para tela após a composição da câmera atual.
+[[hook]]
+at = 0x20359F
+call = "EspCaptureProjection"

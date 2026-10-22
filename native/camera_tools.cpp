@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cmath>
+#include <cstdio>
 #include <string>
 #include <SDL3/SDL.h>
 #include <imgui.h>
@@ -48,6 +49,23 @@ void DrawDiagnosticHud() {
     if (!diagnostic.enabled || !g_mission || g_paused || !touch::LookActive() ||
         app::MenuOpen() || !host::Foreground()) return;
     const auto display = ImGui::GetIO().DisplaySize;
+    uint32_t drawn = 0;
+    if (diagnostic.points_enabled && diagnostic.camera_valid) {
+        auto* draw = ImGui::GetForegroundDrawList();
+        for (uint32_t i = 0; i < diagnostic.point_count; ++i) {
+            const auto& point = diagnostic.points[i];
+            float x, y;
+            if (!game::esp_diagnostic::Project(point.position, diagnostic.camera, display.x, display.y, x, y)) continue;
+            ++drawn;
+            // Amarelo: leitura recente. Laranja: última posição observada, que pode estar desatualizada.
+            auto color = point.age <= 2 ? IM_COL32(255,235,40,255) : IM_COL32(255,145,40,180);
+            ImVec2 center(x,y);
+            draw->AddCircleFilled(center, 5, IM_COL32(0,0,0,220));
+            draw->AddCircleFilled(center, 3, color);
+            char label[24]; std::snprintf(label, sizeof(label), "C%u", point.id);
+            draw->AddText(ImVec2(x+7,y-8), color, label);
+        }
+    }
     // Abaixo da fileira superior de controles, próximo da pausa no layout padrão.
     ImGui::SetNextWindowPos(ImVec2(display.x * 0.527f, display.y * 0.15f), ImGuiCond_Always, ImVec2(0.5f, 0));
     ImGui::SetNextWindowBgAlpha(0.72f);
@@ -57,6 +75,8 @@ void DrawDiagnosticHud() {
         ImGui::SetWindowFontScale(1.35f);
         ImGui::Text("ESP teste | Recentes: %u | Registrados: %u", diagnostic.candidates, diagnostic.registered);
         ImGui::Text("Deteccoes: %u (inclui repeticoes)", diagnostic.observations);
+        if (diagnostic.points_enabled)
+            ImGui::Text("Pontos na tela: %u | Camera: %s", drawn, diagnostic.camera_valid ? "OK" : "aguardando");
     }
     ImGui::End();
 }
@@ -76,6 +96,8 @@ void DrawCheats() {
         game::esp_diagnostic::State().Enable(diagnostic.enabled);
     diagnostic = game::esp_diagnostic::State().Get();
     if (diagnostic.enabled) {
+        if (ImGui::Checkbox("Pontos de teste", &diagnostic.points_enabled))
+            game::esp_diagnostic::State().ShowPoints(diagnostic.points_enabled);
         ImGui::Text("Candidatos recentes: %u", diagnostic.candidates);
         ImGui::Text("Enderecos registrados (ate 128): %u", diagnostic.registered);
         ImGui::Text("Deteccoes desde a ativacao: %u", diagnostic.observations);
