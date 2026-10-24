@@ -8,8 +8,8 @@ O código x86 do jogo é recompilado antecipadamente para C++ com o [XboxXBE-Rec
 > O projeto não inclui os arquivos do jogo. Para instalar ou compilar, use os arquivos da sua própria cópia adquirida legalmente.
 
 <p align="center">
-  <a href="https://youtu.be/x5bczwTuyhw">
-    <img src="https://img.youtube.com/vi/x5bczwTuyhw/maxresdefault.jpg" alt="Black para Android em execução no POCO F6" width="720">
+  <a href="https://youtu.be/cyMfpUp91xw?is=O7uA55AeeUvPSilf">
+    <img src="https://img.youtube.com/vi/cyMfpUp91xw/maxresdefault.jpg" alt="Black para Android em execução no POCO F6" width="720">
   </a>
   <br>
   <sub>▶ Jogo no POCO F6, configurações máximas e mira por giroscópio</sub>
