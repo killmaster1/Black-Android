@@ -1,60 +1,43 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/RanggaCasper/Black-Android/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="96" alt="Black">
-</p>
+# BLACK Android — Sandro Mods {{VERSION}}
 
-<h1 align="center">Black for Android {{VERSION}}</h1>
+Modificação de BLACK Android com o Mod Menu de **Sandro Mods**.
 
-<p align="center">
-  An unofficial native Android port of the original Xbox version of <b>Black</b>,<br>
-  statically recompiled with <a href="https://github.com/TGP482/XboxXBE-Recomp">XboxXBE-Recomp</a> and drawn with Vulkan.
-</p>
+## Download
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white" alt="Android 10+">
-  <img src="https://img.shields.io/badge/arch-arm64--v8a-blue" alt="arm64-v8a">
-  <img src="https://img.shields.io/badge/Vulkan-1.1-AC162C?logo=vulkan&logoColor=white" alt="Vulkan 1.1">
-  <img src="https://img.shields.io/badge/SDL-3-1D4F91" alt="SDL3">
-</p>
-
-> [!IMPORTANT]
-> This release contains **no game assets**. You need the files from your own legally acquired copy of *Black* (USA or Europe release).
-
-## 📦 Download
-
-| File | Size | SHA-256 |
+| Arquivo | Tamanho | SHA-256 |
 | --- | --- | --- |
-| [`{{APK}}`](https://github.com/RanggaCasper/Black-Android/releases/download/{{TAG}}/{{APK}}) | {{SIZE}} | `{{SHA256}}` |
+| [{{APK}}](https://github.com/killmaster1/Black-Android/releases/download/{{TAG}}/{{APK}}) | {{SIZE}} | `{{SHA256}}` |
 
-## 🚀 Installation
+## Novidades
 
-1. Install **`{{APK}}`** on your phone.
-2. Open **Black Android** and allow **all files access** when it asks.
-3. Copy the game into **`/storage/emulated/0/Black`**, or into a `Black` folder on your SD card: the disc image (`.iso`), or `default.xbe` with its data folders.
-4. The game starts as soon as it finds the files.
+- Botão **MOD** durante a missão: abre o menu e congela a ação sem entrar no menu de pausa do jogo.
+- Categorias Jogador, Armas, Jogo, Câmera, ESP, Diagnóstico e NPCs, com janela móvel e redimensionável.
+- Câmera livre/noclip da câmera e ajuste de posição/FOV; mira de ferro ajustável da AK47.
+- ESP Linha, Caixa, vida numérica e direções de NPCs fora da tela, com contador vermelho.
+- **Modo Extremo**: base Black Ops, dano de tiros recebido ajustável e vida dos NPCs maior.
+- Créditos na abertura e assinatura **Sandro Mods** nas missões, com botão para o canal.
+- Primeiro teste de duplicação de uma próxima criação natural de NPC.
+- Correção de compatibilidade com o SDK atualizado e tratamento dos contadores ao morrer/reiniciar.
 
-> [!TIP]
-> If you don't grant all files access, put the game in `Android/data/com.racas.black/files/assets` instead. Settings, saves, logs and the shader cache are stored in `Android/data/com.racas.black/files`.
+## Como instalar
 
-## ✨ Features
+1. Baixe e instale **{{APK}}** em um aparelho Android 10 ou superior, arm64, com Vulkan 1.1.
+2. Confirme os créditos e conceda o acesso aos arquivos quando solicitado.
+3. Coloque sua cópia do jogo em `/storage/emulated/0/Black`: ISO ou `default.xbe` acompanhado das pastas de dados.
+4. Na missão, toque em **MOD** para acessar as opções.
 
-| | |
-| --- | --- |
-| 🖥️ **Graphics** | Render resolution 20–200%, FOV 45–140°, viewmodel FOV, FMV scale, unlocked frame rate, V-Sync, FPS counter, anisotropic filtering, 2x / 4x / 8x draw distance, toggleable reload blur |
-| 👆 **Touch Controls** | Presets and a layout editor to move and resize each control, touch sensitivity, gyroscope aiming with the phone or a DualShock 4 / DualSense |
-| 🎮 **Other Input** | SDL3 controllers with rumble, keyboard and a captured mouse with rebindable controls |
-| ⚙️ **General** | Language (with Indonesian), skip intros, audio output, update check, pause while in the background |
-| 💀 **Cheats** | Infinite ammo and grenades, rapid fire, no recoil, god mode, one-hit kills, game speed |
+O APK não inclui os arquivos do jogo. É necessária sua própria cópia de BLACK para Xbox, na versão dos EUA ou Europa compatível.
 
-The settings are in the game's own options menu, one page per group. Android's back button opens the pause menu.
+## Recursos experimentais
 
-## 📱 Requirements
+- O ESP ainda pode marcar aliados. As caixas usam altura estimada, ajustável no menu.
+- A duplicação cria no máximo um NPC extra por solicitação, na próxima criação natural; não é spawn instantâneo nem permite escolher equipe.
+- O Modo Extremo não inclui um ajuste próprio de precisão da IA.
+- Algumas adições recentes ainda dependem de validação no aparelho; a compilação bem-sucedida não substitui o teste durante as missões.
 
-- **Android** 10 or newer, arm64
-- **GPU** with a Vulkan 1.1 driver (Adreno 6xx+, Mali-G7x+, Xclipse)
-- **4 GB** RAM, **2 GB** free storage
+## Créditos
 
-## 🙏 Credits
+**Modificação e Mod Menu:** Sandro Mods — [YouTube](https://youtube.com/@sandromods2022?si=n_ompvindW-w_GC1).
 
-Built on [XboxXBE-Recomp](https://github.com/TGP482/XboxXBE-Recomp) by **TGP482**, with [SDL](https://github.com/libsdl-org/SDL), [glslang](https://github.com/KhronosGroup/glslang), [toml++](https://github.com/marzer/tomlplusplus) and [Dear ImGui](https://github.com/ocornut/imgui).
-
----
+Agradecimentos a **Rangga Casper**, **TGP482**, ao [XboxXBE-Recomp](https://github.com/TGP482/XboxXBE-Recomp), à comunidade dos ports, ao SDL e ao Dear ImGui.
+BLACK foi desenvolvido pela Criterion Games e publicado pela Electronic Arts. Os créditos e a licença originais do projeto são preservados.

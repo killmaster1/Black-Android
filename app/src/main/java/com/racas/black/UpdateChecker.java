@@ -20,7 +20,7 @@ import org.json.JSONObject;
 // newer than the one installed and the player has not skipped it, and from the options menu, where the answer is
 // given whatever it is.
 final class UpdateChecker {
-    static final String REPO = "RanggaCasper/Black-Android";
+    static final String REPO = "killmaster1/Black-Android";
     private static final String LATEST = "https://api.github.com/repos/" + REPO + "/releases/latest";
     private static final String TAG = "BlackUpdate";
     private static final int TIMEOUT_MS = 8000;
@@ -120,9 +120,10 @@ final class UpdateChecker {
         }
     }
 
-    // GitHub's generated "What's Changed" list, without the authors' links: "* fix: x by @a in https://…" → "• fix: x"
+    // Aceita o histórico em português e o formato antigo do GitHub, removendo links de autoria.
     private static String changes(String body) {
-        int at = body.indexOf("## What's Changed");
+        int at = body.indexOf("## O que mudou");
+        if (at < 0) at = body.indexOf("## What's Changed");
         if (at < 0) return "";
         StringBuilder sb = new StringBuilder();
         int lines = 0;
