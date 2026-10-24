@@ -97,7 +97,7 @@ constexpr uint32_t kAudioOutputs[] = {audio::kOutputAuto, audio::kOutputMono, au
 const char* const kAudioOutputNames[] = {"AUTOMATIC", "MONO", "2.0 STEREO", "5.1 SURROUND"};
 const char* const kLanguageNames[] = {"ENGLISH", "FRENCH", "GERMAN", "ITALIAN", "SPANISH",
                                       "INDONESIAN"};  // as game::kLanguages
-constexpr uint32_t kFpsCaps[] = {30, 60, 75, 90, 120, 144, 165, 240, 360, kFpsCapRefresh, 0};
+constexpr uint32_t kFpsCaps[] = {30, 60, 75, 90, 120, 144, 165, 240, 360, kAndroidFpsCapRefresh, 0};
 
 int StepIndex(int index, int step, int count) {
     if (count <= 0) return 0;
@@ -393,7 +393,7 @@ bool StepDisplayRow(int id, int step, Settings& s, char (&text)[64]) {
             return true;
         case kMaxFps: {
             uint32_t cap = kFpsCaps[StepTable(kFpsCaps, s.fps_cap, step)];
-            if (cap == kFpsCapRefresh) std::snprintf(text, sizeof(text), "REFRESH RATE");
+            if (cap == kAndroidFpsCapRefresh) std::snprintf(text, sizeof(text), "REFRESH RATE");
             else if (cap) std::snprintf(text, sizeof(text), "%u", cap);
             else std::snprintf(text, sizeof(text), "UNLIMITED (DEFAULT)");
             return true;
@@ -867,7 +867,7 @@ void PaceAt(uint32_t cap) {
 }  // namespace
 
 void PaceFrame() {
-    if (Get().fps_cap != kFpsCapRefresh) {
+    if (Get().fps_cap != kAndroidFpsCapRefresh) {
         Pace();
         return;
     }

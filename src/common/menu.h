@@ -10,8 +10,8 @@ bool MenuOpen();
 bool Capturing();  // a key binding waits for a key
 void ToggleMenu();
 void DrawUi(double fps);
-inline constexpr uint32_t kFpsCapRefresh = 1;  // Settings::fps_cap: just under the display's refresh rate
-void PaceFrame();  // app::Pace, with kFpsCapRefresh; game thread, after the present
+inline constexpr uint32_t kAndroidFpsCapRefresh = 1;  // Valor reservado pelo Android para acompanhar a taxa de atualização da tela.
+void PaceFrame();  // Limita os quadros após a apresentação, usando a taxa de atualização quando solicitado.
 
 // the panel's rows, for the game's own options menu
 namespace rows {
