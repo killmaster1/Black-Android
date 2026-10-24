@@ -620,3 +620,8 @@ call = "NpcSpawnEnd"
 [[hook]]
 at = 0x1B2746
 call = "NpcSpawnEnd"
+
+# Modo Extremo: após carregar a vida, antes da subtração original do dano do tiro.
+[[hook]]
+at = 0x1EDA7E
+call = "ExtremeBulletDamage"

@@ -170,3 +170,7 @@ O menu **Pausa → CHEATS** reúne os cheats existentes em categorias laterais, 
 O botão **MOD**, ao lado da pausa durante a missão, abre o painel e congela a ação sobre a imagem atual. **Continuar missao** retoma o jogo. A categoria **ESP** inclui vida numérica e um contador vermelho com direções de NPCs vivos fora da tela. A lista ainda pode incluir aliados.
 
 A categoria **MOD → NPCs** mostra um diagnóstico das criações naturais para investigar spawn manual. Veja o [guia de criação de NPCs](docs/criacao-npcs.md); o primeiro botão de teste duplica uma próxima criação natural; spawn instantâneo e escolha de equipe ainda não estão disponíveis.
+
+### Sandro Mods e Modo Extremo
+
+O APK exibe créditos aos responsáveis pelo port e identifica **Sandro Mods** como autor desta modificação antes de iniciar o jogo. Ao entrar numa tentativa de missão, a mensagem de assinatura permite abrir o canal ou fechar e continuar. Em **MOD → Jogo**, o **Modo Extremo** usa Black Ops como base e aumenta o dano de tiros recebido e a vida dos NPCs. Veja o [guia de assinatura e dificuldade](docs/assinatura-extremo.md).

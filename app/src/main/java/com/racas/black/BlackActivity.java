@@ -24,6 +24,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.libsdl.app.SDLActivity;
 import org.libsdl.app.SDLControllerManager;
@@ -42,6 +43,8 @@ public class BlackActivity extends SDLActivity {
     private UpdateChecker.Release update;  // a newer release not shown yet
     private final GameImporter importer = new GameImporter(this);
     private boolean importing;  // the file picker or the copy is up: nothing else is asked meanwhile
+    private final CountDownLatch startupReady = new CountDownLatch(1);
+    private volatile boolean startupApproved;
     private boolean checking;   // a check asked from the menu is under way
 
     @Override
@@ -56,7 +59,39 @@ public class BlackActivity extends SDLActivity {
             if (v != null) v.setOnCapturedPointerListener(BlackActivity::onCapturedPointer);
         File own = getExternalFilesDir(null);
         if (own != null) new File(own, "assets").mkdirs();
-        // every launch: a newer release is shown once nothing else is asked
+        showStartupCredits();
+    }
+
+    // Os créditos aparecem antes de permissões, atualização, busca dos arquivos e inicialização do jogo.
+    private void showStartupCredits() {
+        dialog = new AlertDialog.Builder(this)
+                .setTitle("BLACK — Créditos e agradecimentos")
+                .setMessage("Mod Menu criado por Sandro Mods\n\n"
+                        + "Agradecimentos a Rangga Casper, TGP482, ao projeto XboxXBE-Recomp "
+                        + "e à comunidade responsável pelos ports e ferramentas de BLACK.\n\n"
+                        + "BLACK foi desenvolvido pela Criterion Games e publicado pela Electronic Arts.\n\n"
+                        + "Esta modificação e o Mod Menu foram feitos por Sandro Mods.")
+                .setCancelable(false)
+                .setPositiveButton("Continuar", (d, which) -> finishStartupCredits())
+                .show();
+    }
+
+    // Chamada pela thread nativa do SDL; a interface principal nunca espera neste bloqueio.
+    public boolean waitForStartupCredits() {
+        try {
+            startupReady.await();
+            return startupApproved;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+    }
+
+    private void finishStartupCredits() {
+        startupApproved = true;
+        dialog = null;
+        startupReady.countDown();
+        if (resumed) askForGame();
         UpdateChecker.check(this, false, (r, failed) -> {
             if (r == null) return;
             update = r;
@@ -158,8 +193,16 @@ public class BlackActivity extends SDLActivity {
     protected void onResume() {
         super.onResume();
         resumed = true;
+        if (!startupApproved) return;
         askForGame();
         tellOfUpdate();
+    }
+
+    @Override
+    protected void onDestroy() {
+        // Libera a thread nativa se o aplicativo for encerrado antes da confirmação.
+        startupReady.countDown();
+        super.onDestroy();
     }
 
     @Override
@@ -206,6 +249,7 @@ public class BlackActivity extends SDLActivity {
     }
 
     private void askForGame() {
+        if (!startupApproved) return;
         if (importing || (dialog != null && dialog.isShowing())) return;
         File own = getExternalFilesDir(null);
         if (own != null && hasGame(new File(own, "assets"))) return;

@@ -5,6 +5,8 @@ namespace camera_tools {
 void SetContext(bool mission, bool paused);
 void OpenCheats();
 void OpenInMission();
+void MissionStarted();
+void DismissWelcome();
 void Close();
 bool FreezeRequested();
 void Draw();

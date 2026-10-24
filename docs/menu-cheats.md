@@ -13,7 +13,7 @@ Ao entrar pelo caminho antigo, o botão **Voltar a pausa** mantém o comportamen
 | --- | --- |
 | Jogador | Invencibilidade e matar com um tiro |
 | Armas | Munição infinita, granadas infinitas, sem recuo, cadência de 1x a 4x, mira de ferro e registro da AK47 |
-| Jogo | Velocidade de 25% a 200%, liberar todas as missões e liberar Black Ops |
+| Jogo | Modo Extremo com dano e vida ajustáveis, velocidade de 25% a 200%, liberar missões e Black Ops |
 | Câmera | Câmera livre/noclip, velocidade do voo, ajuste de câmera e ocultar HUD |
 | ESP | Ativar leitura, linhas, caixas, vida, contador e direções fora da tela, altura estimada, pontos e desligar ESP |
 | Diagnóstico | Ativar leitura de NPCs, exibir contadores na missão e conferir a lista |
@@ -88,3 +88,5 @@ A apresentação repetida, a retomada do áudio e o ciclo de foco precisam ser
 verificados no aparelho com o APK completo.
 
 A investigação de spawn está documentada no [guia de criação de NPCs](criacao-npcs.md).
+
+A [assinatura de Sandro Mods e o Modo Extremo](assinatura-extremo.md) têm um guia próprio.

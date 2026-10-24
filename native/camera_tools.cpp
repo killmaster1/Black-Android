@@ -21,7 +21,7 @@
 
 namespace camera_tools {
 namespace {
-std::atomic<bool> g_direct{false};
+std::atomic<bool> g_direct{false}, g_welcome{false};
 std::atomic<bool> g_mission{false}, g_paused{true}, g_cheats{false}, g_visible{false};
 // Desenho e eventos acessam estes dados sob app::UiLock.
 Rect g_bounds, g_launcher_bounds;
@@ -52,7 +52,7 @@ void Save() {
 }
 void DrawLauncher() {
     g_launcher_bounds = {};
-    if (!g_mission || g_paused || app::MenuOpen() || !host::Foreground()) return;
+    if (!g_mission || g_paused || g_welcome || app::MenuOpen() || !host::Foreground()) return;
     float x,y,size; touch::ModButtonAnchor(x,y,size);
     g_launcher_position=ImVec2(x,y); g_launcher_size=size;
     ImGui::SetNextWindowPos(ImVec2(x-size/2,y-size/2),ImGuiCond_Always);
@@ -67,6 +67,25 @@ void DrawLauncher() {
         g_launcher_bounds={a.x,a.y,b.x-a.x,b.y-a.y};
     }
     ImGui::End(); ImGui::PopStyleVar();
+}
+void DrawWelcome() {
+    auto display=ImGui::GetIO().DisplaySize;
+    ImGui::SetNextWindowPos(ImVec2(display.x/2,display.y/2),ImGuiCond_Always,ImVec2(0.5f,0.5f));
+    ImGui::SetNextWindowSize(ImVec2(std::min(500.0f,display.x-24),0),ImGuiCond_Always);
+    const auto flags=ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoSavedSettings;
+    if (ImGui::Begin("Sandro Mods###assinatura_missao",nullptr,flags)) {
+        ImGui::SetWindowFontScale(1.35f);
+        ImGui::TextWrapped("Mod Menu criado por Sandro Mods");
+        ImGui::TextWrapped("Inscreva-se no canal");
+        ImGui::Spacing();
+        if (ImGui::Button("Ir ao canal",ImVec2(-1,42)))
+            SDL_OpenURL("https://youtube.com/@sandromods2022?si=n_ompvindW-w_GC1");
+        if (ImGui::Button("Fechar",ImVec2(-1,42))) DismissWelcome();
+        auto pos=ImGui::GetWindowPos(),size=ImGui::GetWindowSize();
+        g_bounds={pos.x,pos.y,size.x,size.y};
+    }
+    ImGui::End();
 }
 void DrawDiagnosticHud() {
     const auto diagnostic = game::esp_diagnostic::State().Get();
@@ -212,6 +231,14 @@ void DrawCheats() {
         ImGui::TextWrapped("Calibre a arma na aba AK47 do painel de ajuste de camera.");
         break;
     case 2:
+        ImGui::Checkbox("Modo Extremo",&o.extreme_mode);
+        if (o.extreme_mode) {
+            IntSlider("Dano de tiros recebido",o.extreme_damage,150,400,"%d%%");
+            IntSlider("Vida dos NPCs",o.extreme_npc_health,2,6,"%dx");
+            ImGui::TextWrapped("Base Black Ops. Aumenta o desafio alem do original. Pode afetar aliados.");
+            if (o.god_mode || o.one_hit_kill)
+                ImGui::TextWrapped("Invencibilidade e matar com um tiro reduzem o desafio.");
+        }
         IntSlider("Velocidade do jogo",o.game_speed,25,200,"%d%%");
         ImGui::Checkbox("Liberar todas as missoes",&o.unlock_levels);
         ImGui::Checkbox("Liberar Black Ops",&o.unlock_black_ops);
@@ -268,7 +295,7 @@ void DrawCheats() {
         if (ImGui::Button("Duplicar proximo NPC (teste)",ImVec2(-1,36))) game::npc_spawn::State().Arm();
         if (ImGui::Button("Cancelar duplicacao",ImVec2(-1,36))) game::npc_spawn::State().Cancel();
         ImGui::TextWrapped("%s",game::npc_spawn::Text(spawn.status));
-        ImGui::Text("Extras confirmados: %u",spawn.created);
+        ImGui::Text("Extras nesta tentativa: %u",spawn.created);
         ImGui::TextWrapped("Retome e avance ate nascer outro NPC. Um extra herda o perfil e o ponto de nascimento. Aliado/inimigo ainda nao pode ser escolhido.");
         ImGui::Separator();
         auto capture=game::npc_creation::State().Get();
@@ -340,12 +367,14 @@ void DrawEditor() {
 }
 
 void SetContext(bool mission, bool paused) {
-    game::esp_diagnostic::State().SetPaused(paused || g_direct);
+    game::esp_diagnostic::State().SetPaused(paused || g_direct || g_welcome);
     if (!mission) game::esp_diagnostic::State().Reset();
     g_mission = mission; g_paused = paused;
-    if (!mission) g_direct=false;
+    if (!mission) { g_direct=false; g_welcome=false; }
     if (!mission || !paused) g_cheats = false;
 }
+void MissionStarted() { g_welcome=true; }
+void DismissWelcome() { g_welcome=false; game::esp_diagnostic::State().SetPaused(g_paused || g_direct); }
 void OpenCheats() { g_cheats = true; }
 void OpenInMission() {
     if (!g_mission || g_paused) return;
@@ -359,11 +388,17 @@ void Close() {
     if (direct) touch::CancelGestures();
     game::esp_diagnostic::State().SetPaused(g_paused);
 }
-bool FreezeRequested() { return g_direct && g_mission; }
+bool FreezeRequested() { return (g_direct || (g_welcome && !g_paused)) && g_mission; }
 bool Visible() { return g_visible.load(); }
-bool Modal() { return g_mission && (g_direct || (g_cheats && g_paused)); }
+bool Modal() { return g_mission && (g_direct || (g_welcome && !g_paused) || (g_cheats && g_paused)); }
 
 void Draw() {
+    if (g_welcome && g_mission && !g_paused && !app::MenuOpen() && host::Foreground()) {
+        g_launcher_bounds={}; g_bounds={}; g_visible=true;
+        ImGui::GetIO().MouseDrawCursor=ImGui::GetIO().MouseSource!=ImGuiMouseSource_TouchScreen;
+        game::esp_diagnostic::State().SetPaused(true);
+        DrawWelcome(); return;
+    }
     if ((game::Opt().esp_line || game::Opt().esp_box || game::Opt().esp_health || game::Opt().esp_offscreen) && !game::esp_diagnostic::State().Enabled())
         game::esp_diagnostic::State().Enable(true);
     DrawLauncher();
@@ -447,7 +482,7 @@ bool RouteEvent(const SDL_Event& e) {
         case SDL_EVENT_MOUSE_WHEEL: return (Modal() || g_bounds.Contains(g_mouse_x,g_mouse_y) || g_launcher_bounds.Contains(g_mouse_x,g_mouse_y));
         case SDL_EVENT_KEY_DOWN:
             if (Modal() && (e.key.scancode == SDL_SCANCODE_ESCAPE || e.key.scancode == SDL_SCANCODE_AC_BACK)) {
-                if (!e.key.repeat) Close();
+                if (!e.key.repeat) { if (g_welcome && !g_paused) DismissWelcome(); else Close(); }
                 return true;
             }
             return Modal();

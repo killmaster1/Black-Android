@@ -61,4 +61,7 @@ int main() {
     kernel::W32(layout::kWorld,world);State().World(world);
     assert(State().Arm());ctx.esp=0xFFFFFFF0;NpcSpawnBegin(ctx,nullptr);NpcSpawnEnd(ctx,nullptr);
     assert(guest_calls==2 && State().Get().status==Status::Armed);
+    auto previous_epoch=State().Get().epoch;
+    State().Reset();
+    assert(State().Get().status==Status::Idle && State().Get().created==0 && State().Get().epoch!=previous_epoch);
 }

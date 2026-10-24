@@ -1,4 +1,5 @@
 #include "game/npc_creation.h"
+#include "game/extreme.h"
 #include "game/layout.h"
 #include "kernel/memory.h"
 #include "xdk/hle.h"
@@ -52,6 +53,10 @@ void NpcCreationEnd(X86Context& ctx, uint8_t*) {
     uint32_t slot=--depth;
     if (slot>=pending.size()) return;
     auto call=pending[slot]; pending[slot]={};
+    if (Readable(ctx.eax,0x90)) {
+        uint32_t actor=kernel::R32(ctx.eax+0x8C);
+        if (Readable(actor,0x3A0) && kernel::R32(actor+0xC4)==1) game::extreme::Health().Created(actor);
+    }
     if (!call.token) return;
     using game::npc_creation::Result;
     Result result=ctx.eax ? Result::Unreadable : Result::Empty;

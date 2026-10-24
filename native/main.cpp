@@ -26,6 +26,7 @@
 #include "app/app.h"
 #include "common/camera_tools.h"
 #include "build_info.h"
+#include "branding.h"
 #include "core/input.h"
 #include "core/log.h"
 #include "host.h"
@@ -342,6 +343,7 @@ void Dispatch(const SDL_Event& e) {
 }  // namespace
 
 int main(int, char**) {
+    if (!branding::WaitForStartupCredits()) return 0;
     LogToLogcat();
     SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
     SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");

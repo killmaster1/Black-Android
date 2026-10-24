@@ -24,6 +24,10 @@ public:
         if (world==value) return;
         world=value; uint64_t epoch=snapshot.epoch+1; snapshot={}; snapshot.epoch=epoch;
     }
+    void Reset() {
+        std::lock_guard lock(mutex);
+        uint64_t epoch=snapshot.epoch+1; snapshot={};snapshot.epoch=epoch;
+    }
     bool Arm() {
         std::lock_guard lock(mutex);
         if (!world || snapshot.status==Status::Running) return false;

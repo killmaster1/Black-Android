@@ -20,6 +20,7 @@
 #include "xdk/hle.h"
 
 // As matrizes usam memória simulada; a interface é desenhada pelo ImGui real, sem GPU.
+extern "C" bool SDL_OpenURL(const char*) { return true; }
 namespace kernel { uint8_t* g_base; }
 namespace app { bool opened = false; bool MenuOpen() { return opened; } void Save() {} }
 namespace host { bool Foreground() { return true; } void WindowPixels(int& w,int& h) { w=1280; h=720; } }
@@ -79,6 +80,14 @@ int main() {
     game::camera_adjust::Enable(false); Frame(); assert(!camera_tools::Visible());
     e.type=SDL_EVENT_FINGER_UP; assert(camera_tools::RouteEvent(e));  // Libera o gesto mesmo depois de ocultar o painel.
     e.type=SDL_EVENT_FINGER_MOTION; assert(!camera_tools::RouteEvent(e));
+
+    camera_tools::SetContext(true,true); camera_tools::MissionStarted(); Frame();
+    assert(!camera_tools::FreezeRequested());
+    camera_tools::SetContext(true,false); Frame();
+    auto* welcome=ImGui::FindWindowByName("Sandro Mods###assinatura_missao");
+    assert(welcome && welcome->Active && camera_tools::FreezeRequested() && camera_tools::Modal());
+    camera_tools::DismissWelcome(); Frame();
+    assert(!camera_tools::FreezeRequested() && !welcome->Active && !camera_tools::Modal());
 
     // Abre diretamente na missão: o modal não depende de uma página de pausa do jogo.
     camera_tools::SetContext(true,false); camera_tools::OpenInMission(); Frame();

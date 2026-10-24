@@ -43,6 +43,8 @@ struct Options {
     uint32_t rapid_fire = 1;  // cheat: times the player's rate of fire, 1 the game's
     bool no_recoil = false;  // cheat: the player's shots do not kick the view
     uint32_t game_speed = 100;  // cheat: percent of the game's speed, menus and films keep theirs
+    bool extreme_mode = false;  // Black Ops, dano de tiros maior e NPCs mais resistentes.
+    uint32_t extreme_damage = 250, extreme_npc_health = 3;
     bool god_mode = false;  // cheat: no hit takes the player's health
     bool one_hit_kill = false;  // cheat: any hit of the player's bullets kills
     bool infinite_grenades = false;  // cheat: throwing a grenade keeps the count
