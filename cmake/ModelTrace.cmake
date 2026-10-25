@@ -23,7 +23,11 @@ if(BLACK_TRACE_MODELS OR BLACK_MODEL_OVERRIDES)
     return {MatchCase(best->second, parts).string()};]=] [=[    if (best->first == kCdRom)
         if (const Disc* disc = MountedDisc()) {
             const auto* entry = disc->Find(parts);
-            std::string external = model_override::Find(parts, entry ? entry->size : 0);
+            std::string external = model_override::Find(parts, entry ? entry->size : 0, [disc, entry](std::vector<uint8_t>& bytes) {
+                if (!entry || entry->dir || entry->size > 2 * 1024 * 1024) return false;
+                bytes.resize(entry->size);
+                return disc->Read(*entry, 0, bytes.data(), entry->size) == entry->size;
+            });
             if (!external.empty()) return {external};
             return {{}, true, entry};
         }
@@ -31,7 +35,14 @@ if(BLACK_TRACE_MODELS OR BLACK_MODEL_OVERRIDES)
     if (!model_override::Wanted(parts)) return {host.string()};
     std::error_code model_error;
     uint64_t model_size = fs::file_size(host, model_error);
-    std::string external = model_override::Find(parts, model_error ? 0 : model_size);
+    std::string external = model_override::Find(parts, model_error ? 0 : model_size, [host, model_size](std::vector<uint8_t>& bytes) {
+        if (model_size > 2 * 1024 * 1024) return false;
+        std::ifstream file(host, std::ios::binary);
+        if (!file) return false;
+        bytes.resize(model_size);
+        if (model_size) file.read(reinterpret_cast<char*>(bytes.data()), model_size);
+        return bool(file) && file.peek() == std::char_traits<char>::eof();
+    });
     return {external.empty() ? host.string() : external};]=] 1)
         set(trace_patched "#include \"model_override.h\"\n${trace_patched}")
     endif()
@@ -43,7 +54,7 @@ if(BLACK_TRACE_MODELS OR BLACK_MODEL_OVERRIDES)
         message(FATAL_ERROR "Diagnóstico de modelos: SDK incompatível; revisar Transfer antes de instrumentar")
     endif()
     set(trace_insert "        if (!write && done && model_trace::Wanted(f->trace_path)) {\n            std::error_code model_error;\n            uint64_t model_size = f->entry ? f->entry->size : fs::file_size(f->host, model_error);\n            if (!model_error) model_trace::Read(f->trace_path, model_size, pos + n, HostPtr(at), done);\n        }\n${trace_anchor}")
-    string(REPLACE "${trace_anchor}" "${trace_insert}" trace_patched "${trace_patched}")
+    trace_replace("${trace_anchor}" "${trace_insert}" 1)
     set(trace_patched "#include \"model_trace.h\"\n${trace_patched}")
     trace_replace([=[    std::string xbox;]=] [=[    std::string xbox;
     std::string trace_path;  // Nome completo somente para diagnóstico.]=] 1)

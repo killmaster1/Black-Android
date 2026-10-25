@@ -99,6 +99,8 @@ target_include_directories(main SYSTEM PRIVATE ${imgui_SOURCE_DIR})
 target_compile_options(main PRIVATE -fno-strict-aliasing -fsigned-char)
 set(HOST_SOURCES ${RUNTIME_SOURCES} ${GAME_HOST_SOURCES} ${ANDROID_SOURCES})
 set_source_files_properties(${HOST_SOURCES} PROPERTIES COMPILE_OPTIONS "-include;${NATIVE}/compat/crt.h")
+# Mantém a aritmética da conversão OBJ comparável ao protótipo Python.
+set_property(SOURCE ${NATIVE}/model_obj.cpp APPEND PROPERTY COMPILE_OPTIONS -ffp-contract=off)
 set_source_files_properties(${GEN_SOURCES} PROPERTIES
     COMPILE_OPTIONS "-O2;-w;-fno-strict-aliasing;-fsigned-char")
 set_source_files_properties(${NATIVE}/vk_shader.cpp PROPERTIES COMPILE_DEFINITIONS ENABLE_HLSL)

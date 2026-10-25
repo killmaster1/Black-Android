@@ -322,6 +322,7 @@ int Search(GameFiles& game) {
 
 bool FindGame(GameFiles& game) {
     model_override::SetRoot("/sdcard/Black");
+    model_override::SetCacheRoot((ExeDir() / "modelos-cache").string());
     for (;;) {
         int found = Search(game);
         if (found) return found > 0;

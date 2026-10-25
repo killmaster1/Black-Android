@@ -1,5 +1,10 @@
 # BLACK Xbox — V3 experimental para substituir a pistola
 
+## OBJ direto no Android
+
+A atualização mais recente também aceita `/sdcard/Black/bg1_pst.obj` e converte
+para DB em cache. Consulte `OBJ-DIRETO-NO-ANDROID.md` para o procedimento mais curto.
+
 ## Fluxo recomendado: sem reconstruir a ISO
 
 A atualização mais recente do port prioriza `/sdcard/Black/bg1_pst.db`.

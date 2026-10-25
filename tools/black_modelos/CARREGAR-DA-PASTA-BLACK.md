@@ -1,10 +1,14 @@
 # Carregar o DB convertido diretamente de /sdcard/Black
 
+A build mais recente também aceita OBJ direto, com prioridade sobre DB:
+veja `OBJ-DIRETO-NO-ANDROID.md`. Este documento descreve o caminho de DB manual.
+
 O port agora prioriza o DB externo da pistola. É necessário instalar o APK com
 esta alteração uma vez. Depois, **não precisa reconstruir a ISO nem recompilar o
 APK para cada modelo**. A ISO original pode continuar sendo usada.
 
-A substituição usa o arquivo binário `.db` produzido pelo conversor, não o `.obj`.
+Neste caminho manual, a substituição usa o `.db` produzido pelo conversor.
+Para enviar `.obj` diretamente, siga o novo guia citado acima.
 A funcionalidade atual é restrita a `fpguns/bg1_pst.db`; não altera ps5 nem NPCs.
 
 ## Primeiro teste
@@ -34,6 +38,8 @@ Para outro modelo, repita a conversão e a transferência, fechando o processo a
 Não há recarregamento garantido de modelos durante uma missão já em execução.
 
 ## Ordem de prioridade
+
+Antes dos DBs são tentados os OBJs específico e geral, quando presentes e válidos.
 
 1. `/sdcard/Black/modelos/levels/level_00/fpguns/bg1_pst.db` para a fase correspondente.
 2. `/sdcard/Black/bg1_pst.db` como substituição geral de cada recurso de pistola solicitado.
