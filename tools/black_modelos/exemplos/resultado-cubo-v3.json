@@ -1,0 +1,66 @@
+{
+  "versao": 3,
+  "original_sha256": "df87876f470d025644e538b64ff1a827bb63ec13e9c251fcabd8797441b7d3ea",
+  "saida_sha256": "8d2b43c5707cb54524fd3bc54c7e74b432b2fc71295b31d8ced14515995eb8cc",
+  "saida_crc32": "b71f6444",
+  "grupos_buffers_alterados": [
+    1,
+    2
+  ],
+  "grupos_indices_alterados": [
+    1
+  ],
+  "vertices_utilizados": 24,
+  "vertices_reservados_alvo": 3687,
+  "vertices_reservados_por_buffer": 5152,
+  "indices_utilizados": 58,
+  "indices_reservados": 5905,
+  "triangulos": 12,
+  "tamanho_db": 741896,
+  "grupos_originais": {
+    "Pistol_Slide": 1903,
+    "Pistol_Root": 1459,
+    "Pistol_Trigger": 56,
+    "Pistol_Hammer": 131,
+    "Pistol_Magazine": 138
+  },
+  "doador_vertice": 2306,
+  "atributos_12_23_hex": "ff0000006c00000000000000",
+  "escala": 0.012981199473142625,
+  "translacao": [
+    -0.0012154998257756233,
+    -0.0032829996198415756,
+    0.017391499131917953
+  ],
+  "campos_alterados": [
+    "XYZ e UV dos novos vértices",
+    "normal interpretada como 11/11/10",
+    "atributos copiados de Pistol_Root",
+    "índices e contador do grupo 1",
+    "caixas locais do grupo 1"
+  ],
+  "campos_preservados": [
+    "tamanho, offsets e cabeçalhos externos",
+    "grupo 0",
+    "índices e limites do grupo 2",
+    "todos os registros referenciados pelas mãos",
+    "regiões desconhecidas fora dos slots usados"
+  ],
+  "validacoes": [
+    "SHA original homologado",
+    "partição de índices",
+    "doadores rígidos originais",
+    "capacidade",
+    "faces/orientação por releitura",
+    "cópias idênticas",
+    "mãos preservadas",
+    "escrita confinada"
+  ],
+  "advertencias": [
+    "protótipo experimental, sem validação no jogo",
+    "objeto inteiro ligado ao Pistol_Root; sem ferrolho/carregador separados",
+    "materiais e texturas originais",
+    "normais interpretadas por estatística e codec do SDK; declaração do draw ainda não correlacionada",
+    "sem realocação, colisões ou rig OBJ"
+  ]
+}

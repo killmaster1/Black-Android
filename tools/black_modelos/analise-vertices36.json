@@ -1,0 +1,77 @@
+{
+  "original_sha256": "df87876f470d025644e538b64ff1a827bb63ec13e9c251fcabd8797441b7d3ea",
+  "registros_36_identicos": true,
+  "grupos": [
+    {
+      "grupo": 1,
+      "vertices_usados": 3687,
+      "soma_bytes_12_15": {
+        "255": 3687
+      },
+      "nomes_correlacionados_a_uint16_16_23": {
+        "Pistol_Slide": 1903,
+        "Pistol_Root": 1459,
+        "Pistol_Trigger": 56,
+        "Pistol_Hammer": 131,
+        "Pistol_Magazine": 138
+      },
+      "comprimento_11_11_10_em_24_27": [
+        0.9977211224024,
+        0.9999431437719156
+      ]
+    },
+    {
+      "grupo": 2,
+      "vertices_usados": 1465,
+      "soma_bytes_12_15": {
+        "254": 738,
+        "255": 550,
+        "253": 171,
+        "252": 6
+      },
+      "nomes_correlacionados_a_uint16_16_23": {
+        "Elbow_rt": 213,
+        "Wrist_rt": 160,
+        "Finger2_Top_rt": 41,
+        "Finger1_Top_rt": 64,
+        "Finger1_Mid_rt": 50,
+        "Finger3_Top_rt": 42,
+        "Finger4_Top_rt": 47,
+        "Thumb_Top_rt": 51,
+        "Thumb_Mid_rt": 51,
+        "Thumb_Tip_rt": 39,
+        "Finger4_Mid_rt": 39,
+        "Finger3_Mid_rt": 35,
+        "Finger3_Tip_rt": 34,
+        "Finger2_Mid_rt": 37,
+        "Finger2_Tip_rt": 39,
+        "Finger1_Tip_rt": 43,
+        "Elbow_lft": 153,
+        "Joint_wrist_twist": 196,
+        "Shoulder_lft": 65,
+        "Wrist_lft": 238,
+        "Root": 8,
+        "Finger2_Top_lft": 60,
+        "Finger1_Top_lft": 82,
+        "Finger1_Mid_lft": 64,
+        "Finger3_Top_lft": 59,
+        "Finger4_Top_lft": 59,
+        "Thumb_Mid_lft": 67,
+        "Thumb_Top_lft": 63,
+        "Thumb_Tip_lft": 49,
+        "Finger4_Mid_lft": 58,
+        "Finger4_Tip_lft": 47,
+        "Finger3_Mid_lft": 58,
+        "Finger3_Tip_lft": 47,
+        "Finger2_Mid_lft": 49,
+        "Finger2_Tip_lft": 49,
+        "Finger1_Tip_lft": 53,
+        "Shoulder_rt": 83
+      },
+      "comprimento_11_11_10_em_24_27": [
+        0.9978531971392998,
+        0.9999306935782716
+      ]
+    }
+  ]
+}

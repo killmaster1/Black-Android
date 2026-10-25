@@ -1,0 +1,114 @@
+[
+  {
+    "arquivo": "bg1_smg.db",
+    "malhas": 3,
+    "vertices": 12058,
+    "triangulos": 6843,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_snr.db",
+    "malhas": 2,
+    "vertices": 11814,
+    "triangulos": 6200,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_pst.db",
+    "malhas": 3,
+    "vertices": 10626,
+    "triangulos": 6055,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_bns.db",
+    "malhas": 3,
+    "vertices": 12840,
+    "triangulos": 6815,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_ps5.db",
+    "malhas": 3,
+    "vertices": 10626,
+    "triangulos": 6055,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_asr.db",
+    "malhas": 3,
+    "vertices": 12498,
+    "triangulos": 6243,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_rpg.db",
+    "malhas": 2,
+    "vertices": 11114,
+    "triangulos": 6064,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_as5.db",
+    "malhas": 3,
+    "vertices": 12498,
+    "triangulos": 6243,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_ak1.db",
+    "malhas": 3,
+    "vertices": 11214,
+    "triangulos": 5910,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_shg.db",
+    "malhas": 2,
+    "vertices": 9944,
+    "triangulos": 5553,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_sm5.db",
+    "malhas": 3,
+    "vertices": 11950,
+    "triangulos": 6834,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_hvy.db",
+    "malhas": 2,
+    "vertices": 13992,
+    "triangulos": 6856,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_sh5.db",
+    "malhas": 2,
+    "vertices": 9946,
+    "triangulos": 5553,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_hv5.db",
+    "malhas": 2,
+    "vertices": 13992,
+    "triangulos": 6856,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_sn5.db",
+    "malhas": 2,
+    "vertices": 11814,
+    "triangulos": 6200,
+    "ida_e_volta_identica": true
+  },
+  {
+    "arquivo": "bg1_ak5.db",
+    "malhas": 3,
+    "vertices": 11214,
+    "triangulos": 5910,
+    "ida_e_volta_identica": true
+  }
+]

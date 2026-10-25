@@ -17,6 +17,8 @@ jobs:
     env:
       NDK_VERSION: 28.2.13676358
       CMAKE_VERSION: 3.31.6
+      # APK de teste: rastreamento optativo, ativado por model_trace.txt no telefone.
+      GRADLE_ARGS: -PmodelTrace=true
 
     steps:
       - uses: actions/checkout@v4

@@ -1,3 +1,4 @@
+#include "model_trace.h"
 // The game on Android: its files or a disc image (.iso) in the Black folder on the phone's storage or on an SD card
 // (all files access granted) or in the app's own assets folder. The xbe must be the one this build was recompiled from; the Europe xbe
 // is turned into the US one by src/common/europe.patch, linked into the library.
@@ -254,6 +255,7 @@ int Search(GameFiles& game) {
     GameFiles other;
     std::unique_ptr<kernel::Disc> other_disc;
     fs::path other_name;
+    fs::path other_assets;
     auto consider = [&](const fs::path& assets, const fs::path& name, std::vector<uint8_t> xbe,
                         std::unique_ptr<kernel::Disc> disc) {
         std::string sha = Sha1(xbe);
@@ -265,6 +267,7 @@ int Search(GameFiles& game) {
         LOGR("Game: %s in %s, sha1 %s%s%s", IMAGE_XBE, name.string().c_str(), sha.c_str(), release,
              match ? "" : ", another release");
         if (match) {
+            model_trace::Enable(fs::exists(assets / "model_trace.txt"), name.string());
             game = {assets, std::move(xbe)};
             kernel::MountDisc(std::move(disc));
             return true;
@@ -273,6 +276,7 @@ int Search(GameFiles& game) {
             other = {assets, std::move(xbe)};
             other_disc = std::move(disc);
             other_name = name;
+            other_assets = assets;
         }
         return false;
     };
@@ -307,6 +311,7 @@ int Search(GameFiles& game) {
 
     if (other_name.empty()) return 0;
     if (!AskOtherRelease(other_name)) return -1;
+    model_trace::Enable(fs::exists(other_assets / "model_trace.txt"), other_name.string());
     game = std::move(other);
     kernel::MountDisc(std::move(other_disc));
     return 1;

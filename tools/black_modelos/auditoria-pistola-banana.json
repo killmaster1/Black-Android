@@ -1,0 +1,49 @@
+{
+  "original_sha256": "df87876f470d025644e538b64ff1a827bb63ec13e9c251fcabd8797441b7d3ea",
+  "modificado_sha256": "7db3c25d72bf59ada96650ccfe37cb16c34c451b3b53fe5fe91e0133e17a276e",
+  "tamanho": 741896,
+  "bytes_alterados": 77857,
+  "bytes_fora_xyz_caixas": 0,
+  "primeiros_offsets_fora": [],
+  "malhas": [
+    {
+      "numero": 0,
+      "raiz": "0x10680",
+      "vertices_inicio": "0x10760",
+      "limites_inicio": "0x10730",
+      "indices_inicio": "0x12590",
+      "passo": 24,
+      "vertices": 322,
+      "indices": 447,
+      "bytes_xyz_alterados": 2557,
+      "bytes_caixas_alterados": 16,
+      "vertices_alterados": 322
+    },
+    {
+      "numero": 1,
+      "raiz": "0x12a80",
+      "vertices_inicio": "0x13c30",
+      "limites_inicio": "0x13bd0",
+      "indices_inicio": "0x410b0",
+      "passo": 36,
+      "vertices": 5152,
+      "indices": 5905,
+      "bytes_xyz_alterados": 37625,
+      "bytes_caixas_alterados": 21,
+      "vertices_alterados": 5146
+    },
+    {
+      "numero": 2,
+      "raiz": "0x12a80",
+      "vertices_inicio": "0x43ee0",
+      "limites_inicio": "0x13c00",
+      "indices_inicio": "0x71360",
+      "passo": 36,
+      "vertices": 5152,
+      "indices": 2927,
+      "bytes_xyz_alterados": 37625,
+      "bytes_caixas_alterados": 13,
+      "vertices_alterados": 5146
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "original": "/workspace/black-modelos-recebido/black-modelos/bg1_pst_original.db",
+  "inventario": {
+    "sha256": "df87876f470d025644e538b64ff1a827bb63ec13e9c251fcabd8797441b7d3ea",
+    "tamanho": 741896,
+    "malhas": [
+      {
+        "numero": 0,
+        "raiz": "0x10680",
+        "inicio": "0x10760",
+        "passo": 24,
+        "vertices_reservados": 322,
+        "vertices_referenciados": 322,
+        "faixas_referenciadas": [
+          [
+            "0x0",
+            "0x141"
+          ]
+        ],
+        "triangulos": 330,
+        "minimo": [
+          -0.0164170004427433,
+          -0.016623999923467636,
+          -0.014564000070095062
+        ],
+        "maximo": [
+          0.016356999054551125,
+          0.01614999957382679,
+          0.15812599658966064
+        ]
+      },
+      {
+        "numero": 1,
+        "raiz": "0x12a80",
+        "inicio": "0x13c30",
+        "passo": 36,
+        "vertices_reservados": 5152,
+        "vertices_referenciados": 3687,
+        "faixas_referenciadas": [
+          [
+            "0x5b9",
+            "0x141f"
+          ]
+        ],
+        "triangulos": 3415,
+        "minimo": [
+          -0.017441999167203903,
+          -0.0672529935836792,
+          -0.10318499058485031
+        ],
+        "maximo": [
+          0.017441999167203903,
+          0.07103700190782547,
+          0.13796798884868622
+        ]
+      },
+      {
+        "numero": 2,
+        "raiz": "0x12a80",
+        "inicio": "0x43ee0",
+        "passo": 36,
+        "vertices_reservados": 5152,
+        "vertices_referenciados": 1465,
+        "faixas_referenciadas": [
+          [
+            "0x0",
+            "0x5b8"
+          ]
+        ],
+        "triangulos": 2310,
+        "minimo": [
+          -0.19292998313903809,
+          -0.07647799700498581,
+          -0.31713899970054626
+        ],
+        "maximo": [
+          0.19292998313903809,
+          0.10062000155448914,
+          0.3240709900856018
+        ]
+      }
+    ],
+    "pares": [
+      {
+        "malhas": [
+          0,
+          1
+        ],
+        "registros_identicos": false,
+        "bytes_sobrepostos": 0,
+        "indices_comuns": null
+      },
+      {
+        "malhas": [
+          0,
+          2
+        ],
+        "registros_identicos": false,
+        "bytes_sobrepostos": 0,
+        "indices_comuns": null
+      },
+      {
+        "malhas": [
+          1,
+          2
+        ],
+        "registros_identicos": true,
+        "bytes_sobrepostos": 0,
+        "indices_comuns": 0
+      }
+    ]
+  },
+  "variantes": {
+    "/workspace/black-modelos-recebido/black-modelos/bg1_pst_banana.db": {
+      "tamanho_igual": true,
+      "sha256": "7db3c25d72bf59ada96650ccfe37cb16c34c451b3b53fe5fe91e0133e17a276e",
+      "bytes_diferentes": 77857,
+      "malhas": [
+        {
+          "numero": 0,
+          "bytes_por_campo": {
+            "xyz": 2557,
+            "caixas": 16,
+            "indices": 0,
+            "contador": 0,
+            "uv": 0,
+            "outros_atributos": 0
+          },
+          "vertices_xyz_alterados": 322
+        },
+        {
+          "numero": 1,
+          "bytes_por_campo": {
+            "xyz": 37625,
+            "caixas": 21,
+            "indices": 0,
+            "contador": 0,
+            "uv": 0,
+            "outros_atributos": 0
+          },
+          "vertices_xyz_alterados": 5146
+        },
+        {
+          "numero": 2,
+          "bytes_por_campo": {
+            "xyz": 37625,
+            "caixas": 13,
+            "indices": 0,
+            "contador": 0,
+            "uv": 0,
+            "outros_atributos": 0
+          },
+          "vertices_xyz_alterados": 5146
+        }
+      ],
+      "bytes_nao_classificados": 0,
+      "faixas_nao_classificadas": []
+    }
+  }
+}
