@@ -1,3 +1,4 @@
+#include "model_override.h"
 #include "model_trace.h"
 // The game on Android: its files or a disc image (.iso) in the Black folder on the phone's storage or on an SD card
 // (all files access granted) or in the app's own assets folder. The xbe must be the one this build was recompiled from; the Europe xbe
@@ -320,6 +321,7 @@ int Search(GameFiles& game) {
 }  // namespace
 
 bool FindGame(GameFiles& game) {
+    model_override::SetRoot("/sdcard/Black");
     for (;;) {
         int found = Search(game);
         if (found) return found > 0;

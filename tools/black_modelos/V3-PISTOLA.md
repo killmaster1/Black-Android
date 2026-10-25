@@ -1,5 +1,12 @@
 # BLACK Xbox — V3 experimental para substituir a pistola
 
+## Fluxo recomendado: sem reconstruir a ISO
+
+A atualização mais recente do port prioriza `/sdcard/Black/bg1_pst.db`.
+Leia `CARREGAR-DA-PASTA-BLACK.md`: instalar o APK atualizado uma vez e enviar o DB
+por ADB substitui a etapa de reconstrução da XISO. O procedimento de reconstrução
+abaixo permanece como alternativa para testar o recurso embutido.
+
 ## Entrega e estado da validação
 
 Há uma implementação nova, `black_obj_v3.py`, sem sobrescrever V1/V2. Ela aceita
