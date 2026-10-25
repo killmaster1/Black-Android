@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+
+# OBJs sintéticos usados nos testes; não são arquivos de compilação.
+!exemplos/*.obj
