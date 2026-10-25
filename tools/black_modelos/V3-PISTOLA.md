@@ -238,6 +238,8 @@ em release (`logx::Write`), portanto a falta dos antigos `open` não era uma pro
 confiável de que o recurso não foi lido.
 
 - `fonte_selecionada`: apenas a fonte realmente aceita, com caminho da ISO/pasta.
+- Aberturas relativas a diretórios mantêm um caminho separado de diagnóstico,
+  reconstruído a partir do handle pai, sem alterar a resolução original do jogo.
 - `primeira_leitura`: caminho normalizado, tamanho do recurso, offset e bytes de
   uma leitura concluída. O nome `level_XX` identifica a pasta da fase, não um ID
   semântico confirmado da missão. Não foi adicionado ID de arma sem mapeamento.

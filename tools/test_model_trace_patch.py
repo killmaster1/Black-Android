@@ -24,7 +24,10 @@ endif()
  r=subprocess.run([cmake,'-S',str(src),'-B',str(p/'build')],capture_output=True,text=True)
  assert r.returncode==0,r.stdout+r.stderr
  patch=(p/'build/model_trace_files.cpp').read_text()
- assert patch.count('model_trace::Read(')==1 and 'model_trace::Wanted(f->xbox)' in patch
+ assert patch.count('model_trace::Read(')==1 and 'model_trace::Wanted(f->trace_path)' in patch
+ assert patch.count('opened->trace_path = ModelTracePath(name, root)')==2
+ assert patch.count('f->trace_path = ModelTracePath(name, root)')==3
+ assert 'parent->trace_path.empty()' in patch
  assert 'model_trace::Read(' not in (sdk/'runtime/kernel/files.cpp').read_text()
  falso=p/'sdk';(falso/'runtime/kernel').mkdir(parents=True)
  (falso/'runtime/kernel/files.cpp').write_text('// Layout desconhecido, sem Transfer\n')
